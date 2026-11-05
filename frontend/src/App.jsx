@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import './App.css'
 import PrendaCard from './components/PrendaCard'
 import PrendaList from './components/PrendaList'
+import PrendaForm from './components/PrendaForm'
 import PedidoCard from './components/PedidoCard'
 import Tarjeta from './components/Tarjeta'
 import {
-  prendas,
+  prendas as prendasIniciales,
   pedidos,
   materiales,
   proveedores,
@@ -14,6 +16,14 @@ import {
 
 function App() {
   const nombreApp = 'UrbanTrend'
+
+  // Ejercicio 8: Estado para la lista de prendas que permite agregar nuevos registros
+  const [listaPrendas, setListaPrendas] = useState(prendasIniciales)
+
+  const handleAgregarPrenda = (nuevaPrenda) => {
+    // Inmutabilidad: Se crea un arreglo nuevo con spread operator (sin .push())
+    setListaPrendas((prev) => [...prev, nuevaPrenda])
+  }
 
   return (
     <div className="contenedor">
@@ -35,9 +45,12 @@ function App() {
         </ul>
       </Tarjeta>
 
-      {/* Ejercicio 3: Lista modularizada con PrendaList y PrendaCard pasando props y key */}
-      <h2>Catálogo de Prendas (con PrendaList y props)</h2>
-      <PrendaList prendas={prendas} />
+      {/* Ejercicio 8: Formulario controlado con onSubmit y validación */}
+      <PrendaForm onAgregarPrenda={handleAgregarPrenda} />
+
+      {/* Ejercicio 3 y 7: Lista modularizada con PrendaList y campo de búsqueda */}
+      <h2>Catálogo de Prendas ({listaPrendas.length} registros)</h2>
+      <PrendaList prendas={listaPrendas} />
 
       {/* Demostración de valor por defecto en props (sin marca, talla ni stock especificado) */}
       <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>

@@ -116,20 +116,31 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
    * Si `prendasFiltradas.length === 0`, se muestra el mensaje amigable:  
      `No se encontraron prendas que coincidan con "{busqueda}".`
 
-### 8.1 Evidencia de Pruebas de Búsqueda
-* **Búsqueda 1 ("hoodie"):**
-  * Entrada: `hoodie`
-  * Resultado: Renderiza exclusivamente la tarjeta del *Hoodie Doggis Street Corp* (ID 2).
-* **Búsqueda 2 ("rebel"):**
-  * Entrada: `rebel`
-  * Resultado: Renderiza exclusivamente la tarjeta del *Polo Oversize Rebel Classic* (ID 1).
-* **Búsqueda sin Coincidencias ("zapatillas"):**
-  * Entrada: `zapatillas`
-  * Resultado: Muestra el aviso `No se encontraron prendas que coincidan con "zapatillas".`
+---
+
+## 🧩 9. Ejercicio 8 — Formulario Controlado con onSubmit y Validación
+
+1. **Componente de Formulario `src/components/PrendaForm.jsx`:**
+   * Contiene 4 campos controlados (`nombre`, `precio`, `stock`, `talla`).
+   * Maneja el evento de envío con `onSubmit={handleSubmit}` y cancela el comportamiento por defecto del navegador mediante `e.preventDefault()`.
+2. **Validación de Regla de Negocio (Heredada de DRF Semana 8):**
+   * En el Laboratorio 08, el serializador `PrendaSerializer` exigía `validate_precio` (`precio > 0.00`).
+   * En el formulario de React se implementó la misma regla: si el precio es menor o igual a cero (`precioNum <= 0`), se interrumpe el guardado y se muestra el mensaje de error:  
+     `⚠️ Error: El precio debe ser mayor que cero (S/ 0.00), según la regla de la API.`
+3. **Actualización Inmutable del Estado:**
+   * En `App.jsx`, la lista de prendas se elevó a estado (`useState(prendasIniciales)`).
+   * Al guardar, se genera un **nuevo arreglo** usando el operador spread: `setListaPrendas(prev => [...prev, nuevaPrenda])`, cumpliendo la regla de no mutar con `.push()`.
+4. **Limpieza de Campos:**
+   * Tras un envío válido, los campos se reinician a su valor inicial (`setNombre('')`, `setPrecio('')`, `setStock('')`, `setError('')`).
+5. **¿Qué falta para guardar el registro en la base de datos de Django?:**
+   * **Persistencia en SQLite:** Actualmente el nuevo registro solo vive en la memoria RAM del navegador dentro del estado de React. Al recargar la página (`F5`), el registro desaparece.
+   * **Petición HTTP Asíncrona:** Se requiere integrar una función `fetch` o `axios` en `handleSubmit` que envíe una petición `POST` al endpoint:  
+     `POST http://127.0.0.1:8000/api/prendas/` con `headers: { 'Content-Type': 'application/json' }` y el cuerpo en JSON.
+   * **Habilitar CORS en Django:** El backend debe tener instalado `django-cors-headers` para permitir que el frontend en el puerto 5173 envíe datos hacia el servidor Django en el puerto 8000.
 
 ---
 
-## 📁 9. Estructura del repositorio
+## 📁 10. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -144,20 +155,21 @@ Laboratorio10_Django/
     ├── vite.config.js
     └── src/
         ├── main.jsx      # Punto de entrada de la aplicación
-        ├── App.jsx       # Componente principal simplificado
+        ├── App.jsx       # Componente principal simplificado con estado global
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
             ├── Tarjeta.jsx           # Contenedor visual reutilizable con prop children
             ├── PrendaCard.jsx        # Tarjeta de prenda con estado local useState y botón
             ├── PrendaList.jsx        # Lista con input controlado y filtro en tiempo real
+            ├── PrendaForm.jsx        # Formulario controlado con validación onSubmit
             ├── PedidoCard.jsx        # Relación 1:N con total acumulado vía reduce()
             └── DetallePedidoItem.jsx # Elemento anidado con cálculo de subtotal
 ```
 
 ---
 
-## 💻 10. Instalación y Ejecución del Frontend
+## 💻 11. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
@@ -167,8 +179,8 @@ npm install      # Instala las dependencias
 npm run dev      # Inicia el servidor de desarrollo en http://localhost:5173/
 ```
 
-Otros comandos de validación:
+Comandos de validación ejecutados exitosamente:
 ```bash
-npm run build    # Compila la versión para producción en dist/
-npm run lint     # Analiza el código con oxlint
+npm run lint     # oxlint -> 0 errores, 0 warnings
+npm run build    # vite build -> 24 módulos transformados exitosamente en dist/
 ```
