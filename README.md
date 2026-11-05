@@ -1,10 +1,13 @@
 # Laboratorio 10 — React + Vite: Componentes, Props, Estado y Eventos
 
-**Estudiante:** Jesús Enrique Rocha Bobadilla  
-**Curso:** Desarrollo de Aplicaciones Empresariales  
-**Institución:** Tecsup  
-**Repositorio:** `Laboratorio10_Django`  
-**Tecnologías:** React 19, Vite, JavaScript (ES6+), CSS3, Oxlint, Django REST Framework  
+* **Estudiantes:**  
+  * Jesús Enrique Rocha Bobadilla  
+  * Erick Arturo Gamarra Mundaca  
+* **Curso:** Desarrollo de Aplicaciones Empresariales  
+* **Institución:** Tecsup  
+* **Semestre:** 2026-II  
+* **Repositorio de GitHub (Modo de Entrega):** [https://github.com/Jesus-Rocha-B/Laboratorio10_Django](https://github.com/Jesus-Rocha-B/Laboratorio10_Django)  
+* **Tecnologías:** React 19, Vite, JavaScript (ES6+), CSS3, Oxlint, Django REST Framework  
 
 ---
 
@@ -343,7 +346,80 @@ Se verificó mediante Git que los directorios pesados y generados automáticamen
 
 ---
 
-## ✅ 14. Checklist Obligatorio Antes de Continuar — Parte 2
+## 🚀 14. Ejercicio 14 — Publicación en GitHub y Componentes Creados
+
+### 14.1 Modo de Entrega: Dirección Oficial del Repositorio
+* **URL del repositorio:** [https://github.com/Jesus-Rocha-B/Laboratorio10_Django](https://github.com/Jesus-Rocha-B/Laboratorio10_Django)
+* **Rama principal:** `main`
+* **Integrantes del Proyecto:**  
+  * Jesús Enrique Rocha Bobadilla  
+  * Erick Arturo Gamarra Mundaca  
+
+---
+
+### 14.2 Catálogo Exhaustivo de Componentes Funcionales Creados
+Todos los componentes residen en archivos independientes bajo `frontend/src/components/`, estructurados en PascalCase y diseñados para modularidad y reutilización:
+
+| Componente | Archivo Fuente | Propósito y Responsabilidad | Características Técnicas de React |
+| :--- | :--- | :--- | :--- |
+| **`Tarjeta`** | `Tarjeta.jsx` | Contenedor visual envolvente para secciones o registros destacados. | Utiliza `props.children` para inyectar contenido dinámico y `titulo` para el encabezado. Equivale a `{% block %}` en Django. |
+| **`PrendaCard`** | `PrendaCard.jsx` | Tarjeta de presentación individual para una prenda comercial streetwear. | Props desestructuradas (`nombre`, `marca`, `talla`, `precio`, `stock`), valores por defecto, estado local `useState` para carrito y botón `onClick` interactivo. |
+| **`PrendaList`** | `PrendaList.jsx` | Vista de catálogo para iterar prendas. | Recorre el arreglo con `.map()` asignando `key={prenda.id}`. Incluye input controlado de búsqueda en tiempo real e indicador de estado vacío. |
+| **`PrendaForm`** | `PrendaForm.jsx` | Formulario para dar de alta nuevas prendas. | Controlado mediante `value` y `onChange`, cancela recarga con `e.preventDefault()`, valida regla de negocio (`precio > 0`) y emite inserción inmutable. |
+| **`PedidoCard`** | `PedidoCard.jsx` | Representa una orden de compra comercial (Relación 1:N). | Muestra cabecera de pedido, acumula el costo total de la orden con `.reduce()` e itera sus líneas anidadas llamando a `DetallePedidoItem`. |
+| **`DetallePedidoItem`** | `DetallePedidoItem.jsx` | Elemento anidado de línea de pedido. | Recibe datos del ítem, calcula el subtotal (`cantidad * precio`) y renderiza la fila del producto. |
+| **`MaterialCard`** | `MaterialCard.jsx` | Tarjeta de registro para insumos textiles de logística. | Props desestructuradas con defaults (`categoria = 'Insumos Textiles'`, `unidadMedida = 'Metros'`, `stock = 0`), estado local `reservado` y botón interactivo `onClick`. |
+| **`MaterialList`** | `MaterialList.jsx` | Catálogo de insumos textiles con buscador integrado. | Itera con `.map()` y `key={m.id}`. Implementa campo controlado de búsqueda que filtra por nombre o categoría sin distinguir mayúsculas. |
+| **`MaterialForm`** | `MaterialForm.jsx` | Formulario controlado para registrar insumos textiles en almacén. | 5 campos controlados, maneja `onSubmit`, valida reglas DRF de Semana 8 (`precio > 0` y `stock >= 0`), actualiza el estado inmutablemente y limpia campos tras el éxito. |
+| **`DespachoCard`** | `DespachoCard.jsx` | Representa una orden de despacho logístico (Relación N:M). | Componente contenedor de relación que calcula el costo total acumulado con `.reduce()` e itera los materiales despachados llamando a `DetalleDespachoItem`. |
+| **`DetalleDespachoItem`** | `DetalleDespachoItem.jsx` | Elemento anidado del modelo intermedio `DetalleDespacho`. | Muestra insumo despachado, lote de producción, cantidad y costo subtotal calculado. |
+
+---
+
+## 💻 15. Guía de Instalación y Ejecución del Frontend
+
+Para poner en marcha la aplicación React + Vite en un entorno local:
+
+### 15.1 Requisitos Previos
+* **Node.js:** Versión 18 LTS o superior.
+* **npm:** Gestor de paquetes incluido con Node.js.
+
+### 15.2 Pasos de Instalación y Ejecución
+```bash
+# 1. Clonar el repositorio (si no se ha descargado):
+git clone https://github.com/Jesus-Rocha-B/Laboratorio10_Django.git
+cd Laboratorio10_Django
+
+# 2. Entrar al directorio del frontend:
+cd frontend
+
+# 3. Instalar las dependencias de Node.js (genera node_modules localmente):
+npm install
+
+# 4. Iniciar el servidor local de desarrollo de Vite:
+npm run dev
+```
+
+Una vez ejecutado `npm run dev`, la aplicación estará disponible en:
+```text
+  VITE v8.3.4  ready in 150 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+```
+
+### 15.3 Comandos de Verificación y Compilación
+```bash
+# Ejecutar el linter estático de código:
+npm run lint
+
+# Compilar para producción (genera la carpeta dist/ optimizada):
+npm run build
+```
+
+---
+
+## ✅ 16. Checklist Obligatorio Antes de Continuar — Parte 2
 
 A continuación se detalla la verificación de cada uno de los 9 criterios exigidos en la guía del laboratorio:
 
@@ -357,23 +433,23 @@ A continuación se detalla la verificación de cada uno de los 9 criterios exigi
 | **6** | Un campo controlado (`value` y `onChange`) filtra la lista. | Capturas de dos búsquedas. | ✅ **CUMPLIDO** | `MaterialList.jsx` implementa input controlado `busqueda` que filtra por nombre o categoría sin distinguir mayúsculas, con mensaje de no coincidencias. |
 | **7** | Un formulario controlado con `onSubmit` y `preventDefault` agrega un registro sin modificar el arreglo y valida una regla con mensaje de error. | Capturas del envío válido y del inválido. | ✅ **CUMPLIDO** | `MaterialForm.jsx` valida `precio_unitario > 0` y `stock >= 0`, limpia campos tras éxito y actualiza `listaMateriales` con spread operator. |
 | **8** | La consola del navegador no muestra advertencias y `npm run lint` y `npm run build` terminan sin errores. | Capturas de la consola y de la terminal. | ✅ **CUMPLIDO** | `oxlint` validó 15 archivos con 0 errores y 0 warnings; `vite build` compiló los 29 módulos limpiamente en `dist/`. |
-| **9** | Se explica por escrito qué resuelven las `props` y el `estado`, y qué falta para guardar los datos en la base de datos de Django. | Párrafo de justificación. | ✅ **CUMPLIDO** | Justificación detallada redactada en la Sección 15 de este documento. |
+| **9** | Se explica por escrito qué resuelven las `props` y el `estado`, y qué falta para guardar los datos en la base de datos de Django. | Párrafo de justificación. | ✅ **CUMPLIDO** | Justificación detallada redactada en la Sección 17 de este documento. |
 
 ---
 
-## 💡 15. Justificación Teórica: Props, Estado y Persistencia en Django (Criterio 9)
+## 💡 17. Justificación Teórica: Props, Estado y Persistencia en Django (Criterio 9)
 
-### 15.1 ¿Qué resuelven las `props`?
+### 17.1 ¿Qué resuelven las `props`?
 Las **`props` (propiedades)** resuelven la **comunicación unidireccional y jerárquica de datos** (*top-down* o de componente padre a componente hijo) en la arquitectura de React. Permiten que los componentes sean funciones puras, altamente reutilizables y desacoplados de la lógica de negocio central:
 * Permiten parametrizar componentes visuales (`MaterialCard`, `PrendaCard`, `Tarjeta`) para que muestren distinta información según los datos suministrados por el componente superior (`App`).
 * Son de **sólo lectura (inmutables)**, lo que impide que un componente hijo altere por error los datos del padre o de componentes vecinos, garantizando la predictibilidad y estabilidad del flujo de información en la aplicación.
 
-### 15.2 ¿Qué resuelve el `estado` (`useState`)?
+### 17.2 ¿Qué resuelve el `estado` (`useState`)?
 El **`estado` (`useState`)** resuelve la **reactividad, el dinamismo y la persistencia de datos temporales en memoria** dentro del ciclo de vida de la aplicación:
 * A diferencia de las variables locales comunes de JavaScript (que se destruyen y reinician en cada renderizado), las variables de estado se almacenan en los nodos internos del árbol de fibras de React (*Fiber Tree*).
 * Al invocar la función actualizadora (`setState`), React detecta la necesidad de un nuevo ciclo de reconciliación, compara el *Virtual DOM* con el DOM del navegador y actualiza únicamente los nodos específicos que cambiaron, permitiendo una experiencia de usuario fluida sin recargas completas de página (*Single Page Application*).
 
-### 15.3 ¿Qué falta para guardar los datos en la base de datos de Django?
+### 17.3 ¿Qué falta para guardar los datos en la base de datos de Django?
 Actualmente, los registros añadidos mediante los formularios `PrendaForm` y `MaterialForm` se almacenan **únicamente en la memoria RAM del navegador** (dentro del estado de React). Si el usuario refresca la página (`F5`), los nuevos registros desaparecen y la aplicación vuelve a cargar la lista base de `datos.js`.
 
 Para que los datos se guarden permanentemente en la base de datos de Django (SQLite/PostgreSQL), se requiere implementar la integración de cliente-servidor mediante los siguientes cuatro pasos:
@@ -388,11 +464,11 @@ Para que los datos se guarden permanentemente en la base de datos de Django (SQL
 
 ---
 
-## 📁 16. Estructura del Proyecto
+## 📁 18. Estructura Completa del Proyecto
 
 ```text
 Laboratorio10_Django/
-├── README.md             # Documentación principal del Laboratorio 10
+├── README.md             # Documentación principal del Laboratorio 10 y Modo de Entrega
 ├── requirements.txt      # Dependencias del backend (Django y DRF)
 ├── docs/
 │   └── LABORATORIO08.md  # Documentación de la API REST del laboratorio anterior
@@ -418,27 +494,4 @@ Laboratorio10_Django/
             ├── MaterialForm.jsx         # Formulario controlado de insumos textiles
             ├── DespachoCard.jsx         # Relación N:M de logística con costo total
             └── DetalleDespachoItem.jsx  # Elemento anidado de orden de despacho
-```
-
----
-
-## 💻 17. Instalación y Ejecución del Frontend
-
-Requiere Node.js (versión LTS) y npm:
-
-```bash
-cd frontend
-npm install      # Instala las dependencias del proyecto
-npm run dev      # Inicia el servidor local de desarrollo en http://localhost:5173/
-```
-
-### Comandos de Validación Ejecutados:
-```bash
-# 1. Análisis estático de código (Linter):
-npm run lint
-# Resultado: oxlint -> 0 errores, 0 warnings en 15 archivos (17ms)
-
-# 2. Compilación de producción (Build):
-npm run build
-# Resultado: vite build -> 29 módulos transformados exitosamente en dist/ (131ms)
 ```
