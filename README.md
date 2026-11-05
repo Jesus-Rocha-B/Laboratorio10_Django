@@ -34,7 +34,15 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 3. Estructura del repositorio
+## 🧩 3. Ejercicio 2 — Crear el Primer Componente Funcional
+
+1. Se creó el componente `src/components/PrendaCard.jsx` con nombre en mayúscula (`PascalCase`), retornando la estructura JSX de un registro de prenda con exportación por defecto (`export default PrendaCard`).
+2. Se importó en `App.jsx` y se renderizó dos veces consecutivas para verificar el ciclo de vida e instanciación de componentes independientes en React.
+3. **Regla de nomenclatura en JSX:** Se documentó que si el componente se nombra en minúscula (`<prendaCard />`), el compilador de JSX lo interpreta erróneamente como una etiqueta nativa de HTML5 no estándar (`document.createElement('prendacard')`), omitiendo la invocación a la función de JavaScript.
+
+---
+
+## 📁 4. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -53,11 +61,12 @@ Laboratorio10_Django/
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
+            └── PrendaCard.jsx # Primer componente funcional independiente
 ```
 
 ---
 
-## 💻 4. Instalación y Ejecución del Frontend
+## 💻 5. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 

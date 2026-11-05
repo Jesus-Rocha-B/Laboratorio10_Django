@@ -1,4 +1,5 @@
 import './App.css'
+import PrendaCard from './components/PrendaCard'
 import {
   prendas,
   pedidos,
@@ -15,6 +16,13 @@ function App() {
   return (
     <div className="contenedor">
       <h1 className="titulo">{nombreApp} — Catálogo Streetwear</h1>
+
+      {/* Ejercicio 2: Primer componente funcional mostrado dos veces */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h3>Componente PrendaCard (mostrado dos veces):</h3>
+        <PrendaCard />
+        <PrendaCard />
+      </div>
 
       {prendas.length === 0 ? (
         <p>No hay registros</p>
