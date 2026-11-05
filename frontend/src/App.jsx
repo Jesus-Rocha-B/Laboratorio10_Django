@@ -1,6 +1,7 @@
 import './App.css'
 import PrendaCard from './components/PrendaCard'
 import PrendaList from './components/PrendaList'
+import Tarjeta from './components/Tarjeta'
 import {
   prendas,
   pedidos,
@@ -17,6 +18,22 @@ function App() {
   return (
     <div className="contenedor">
       <h1 className="titulo">{nombreApp} — Catálogo Streetwear</h1>
+
+      {/* Ejercicio 4: Componente contenedor Tarjeta con prop especial children */}
+      <Tarjeta titulo="Prenda Destacada de la Colección (Contenedor Tarjeta con children)">
+        <p style={{ marginTop: 0, color: '#475569', fontSize: '0.95rem' }}>
+          Este contenido es inyectado dinámicamente como <code>children</code> dentro del componente <code>Tarjeta</code>:
+        </p>
+        <ul className="lista" style={{ margin: 0 }}>
+          <PrendaCard
+            nombre="Casaca Selva Alegre Windbreaker"
+            marca="Selva Alegre"
+            talla="XL"
+            precio="219.90"
+            stock={5}
+          />
+        </ul>
+      </Tarjeta>
 
       {/* Ejercicio 3: Lista modularizada con PrendaList y PrendaCard pasando props y key */}
       <h2>Catálogo de Prendas (con PrendaList y props)</h2>

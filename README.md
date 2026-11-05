@@ -57,7 +57,18 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 5. Estructura del repositorio
+## 🧩 5. Ejercicio 4 — Componente Contenedor con Children
+
+1. **Creación de `src/components/Tarjeta.jsx`:**
+   * Recibe `{ titulo, children }`.
+   * Encapsula un marco visual consistente con estilos, encabezado condicional y un contenedor interno para renderizar cualquier elemento JSX recibido entre las etiquetas de apertura y cierre.
+2. **Equivalencia con Django Templates (Semana 6):**
+   * En los Templates de Django, el contenedor base utiliza la etiqueta de bloque `{% block content %} ... {% endblock %}` dentro de una plantilla padre (`base.html`). Las plantillas hijas usan `{% extends 'base.html' %}` para inyectar su propio HTML dentro de ese bloque.
+   * En React, la prop especial `children` cumple exactamente el mismo rol de **ranura de inserción (slot)**: todo lo colocado entre `<Tarjeta>` y `</Tarjeta>` es inyectado dentro del componente en el lugar donde se renderiza `{children}`.
+
+---
+
+## 📁 6. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -76,13 +87,14 @@ Laboratorio10_Django/
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
+            ├── Tarjeta.jsx    # Contenedor visual reutilizable con prop children
             ├── PrendaCard.jsx # Tarjeta de prenda con props desestructuradas y default values
             └── PrendaList.jsx # Lista que mapea prendas usando key={prenda.id}
 ```
 
 ---
 
-## 💻 6. Instalación y Ejecución del Frontend
+## 💻 7. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
