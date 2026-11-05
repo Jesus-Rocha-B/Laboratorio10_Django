@@ -100,7 +100,36 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 8. Estructura del repositorio
+## 🧩 8. Ejercicio 7 — Campo Controlado que Filtra la Lista
+
+1. **Implementación de Campo Controlado en `src/components/PrendaList.jsx`:**
+   * Se agregó el estado `const [busqueda, setBusqueda] = useState('')`.
+   * El `<input>` vincula su valor a `value={busqueda}` y su evento a `onChange={(e) => setBusqueda(e.target.value)}`, convirtiéndose en un componente completamente controlado por React.
+2. **Filtrado Invariable a Mayúsculas y Minúsculas (*Case-Insensitive*):**
+   * La lista se filtra en tiempo real mediante:
+     ```javascript
+     const prendasFiltradas = prendas.filter((p) =>
+       p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+     )
+     ```
+3. **Manejo de Lista sin Coincidencias:**
+   * Si `prendasFiltradas.length === 0`, se muestra el mensaje amigable:  
+     `No se encontraron prendas que coincidan con "{busqueda}".`
+
+### 8.1 Evidencia de Pruebas de Búsqueda
+* **Búsqueda 1 ("hoodie"):**
+  * Entrada: `hoodie`
+  * Resultado: Renderiza exclusivamente la tarjeta del *Hoodie Doggis Street Corp* (ID 2).
+* **Búsqueda 2 ("rebel"):**
+  * Entrada: `rebel`
+  * Resultado: Renderiza exclusivamente la tarjeta del *Polo Oversize Rebel Classic* (ID 1).
+* **Búsqueda sin Coincidencias ("zapatillas"):**
+  * Entrada: `zapatillas`
+  * Resultado: Muestra el aviso `No se encontraron prendas que coincidan con "zapatillas".`
+
+---
+
+## 📁 9. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -121,14 +150,14 @@ Laboratorio10_Django/
         └── components/   # Directorio para los componentes reutilizables
             ├── Tarjeta.jsx           # Contenedor visual reutilizable con prop children
             ├── PrendaCard.jsx        # Tarjeta de prenda con estado local useState y botón
-            ├── PrendaList.jsx        # Lista que mapea prendas usando key={prenda.id}
+            ├── PrendaList.jsx        # Lista con input controlado y filtro en tiempo real
             ├── PedidoCard.jsx        # Relación 1:N con total acumulado vía reduce()
             └── DetallePedidoItem.jsx # Elemento anidado con cálculo de subtotal
 ```
 
 ---
 
-## 💻 9. Instalación y Ejecución del Frontend
+## 💻 10. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
