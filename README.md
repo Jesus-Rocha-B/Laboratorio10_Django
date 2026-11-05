@@ -132,15 +132,39 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
    * Al guardar, se genera un **nuevo arreglo** usando el operador spread: `setListaPrendas(prev => [...prev, nuevaPrenda])`, cumpliendo la regla de no mutar con `.push()`.
 4. **Limpieza de Campos:**
    * Tras un envío válido, los campos se reinician a su valor inicial (`setNombre('')`, `setPrecio('')`, `setStock('')`, `setError('')`).
-5. **¿Qué falta para guardar el registro en la base de datos de Django?:**
-   * **Persistencia en SQLite:** Actualmente el nuevo registro solo vive en la memoria RAM del navegador dentro del estado de React. Al recargar la página (`F5`), el registro desaparece.
-   * **Petición HTTP Asíncrona:** Se requiere integrar una función `fetch` o `axios` en `handleSubmit` que envíe una petición `POST` al endpoint:  
-     `POST http://127.0.0.1:8000/api/prendas/` con `headers: { 'Content-Type': 'application/json' }` y el cuerpo en JSON.
-   * **Habilitar CORS en Django:** El backend debe tener instalado `django-cors-headers` para permitir que el frontend en el puerto 5173 envíe datos hacia el servidor Django en el puerto 8000.
 
 ---
 
-## 📁 10. Estructura del repositorio
+## 🧩 10. PARTE 2 — Investigación Propia: Logística Textil (`logistics`)
+
+### 10.1 Ejercicio 9 — Tabla de Equivalencias de la Investigación Propia
+
+| Concepto Requerido | Elemento en Logística (`logistics`) | Componente Implementado | Regla de Negocio / Comportamiento |
+| :--- | :--- | :--- | :--- |
+| **Componente de Registro Individual** | Insumo Textil (`Material`) | `MaterialCard.jsx` | Muestra material, categoría, unidad de medida, precio unitario y badges condicionales de stock (`Sin stock` o `Stock bajo`). |
+| **Botón con Estado (`useState` + `onClick`)** | Reserva de muestra de tela | Botón en `MaterialCard.jsx` | Incrementa un contador de metros/unidades reservadas. Se deshabilita si `stock === 0` o si se agota la disponibilidad. |
+| **Componente de Relación Anidada (N:M)** | Orden de Despacho y sus Detalles (`OrdenDespacho` ↔ `DetalleDespacho`) | `DespachoCard.jsx` + `DetalleDespachoItem.jsx` | `DespachoCard` gestiona la cabecera e itera cada material con `DetalleDespachoItem`, calculando el costo total del envío vía `reduce()`. |
+| **Campo de Búsqueda Controlado** | Filtro de Insumos Textiles | `MaterialList.jsx` | Input controlado (`value` y `onChange`) que filtra materiales por nombre o categoría sin distinguir mayúsculas. |
+| **Formulario Controlado con Validación** | Registro de Nuevo Insumo Textil | `MaterialForm.jsx` | Formulario controlado (`onSubmit` + `preventDefault`) con 4 campos (`nombre`, `categoria`, `precio_unitario`, `stock`). |
+| **Regla de Validación de la API (Semana 8)** | `validate_precio_unitario` y `validate_stock` de DRF | Validación en `MaterialForm.jsx` | El precio unitario debe ser estrictamente mayor a cero (`precio_unitario > 0.00`) y el stock no puede ser negativo (`stock >= 0`). |
+
+### 10.2 Verificación del Checklist Obligatorio — Parte 2
+
+| Criterio del Checklist | Estado | Evidencia de Implementación |
+| :--- | :---: | :--- |
+| **1. Al menos tres componentes funcionales en `src/components` con PascalCase** | ✅ Cumplido | `MaterialCard.jsx`, `MaterialList.jsx`, `DespachoCard.jsx`, `DetalleDespachoItem.jsx`, `MaterialForm.jsx`. |
+| **2. Datos por props desestructuradas y valor por defecto o children** | ✅ Cumplido | `MaterialCard` desestructura props con valores por defecto (`categoria = 'Insumos Textiles'`, `unidadMedida = 'Metros'`, `stock = 0`). |
+| **3. Lista de componentes con `map()` y `key`** | ✅ Cumplido | `MaterialList.jsx` mapea los insumos con `key={m.id}`; `despachos.map()` en `App.jsx`. |
+| **4. Relación 1:N o N:M con componente dentro de otro componente** | ✅ Cumplido | `DespachoCard` aloja y renderiza internamente instancias de `DetalleDespachoItem`. |
+| **5. Estado con `useState` y evento `onClick`** | ✅ Cumplido | Botón `+ Reservar muestra` en `MaterialCard` con contador independiente. |
+| **6. Campo controlado (`value` y `onChange`) que filtra la lista** | ✅ Cumplido | Buscador en tiempo real de insumos textiles en `MaterialList.jsx`. |
+| **7. Formulario controlado con `onSubmit`, `preventDefault`, validación y sin `.push()`** | ✅ Cumplido | `MaterialForm.jsx` con validación de precio y stock, agregando con spread operator. |
+| **8. Consola sin advertencias y `npm run lint` / `npm run build` sin errores** | ✅ Cumplido | Verificado: 0 errores en `oxlint` sobre 15 archivos y compilación limpia en `vite build`. |
+| **9. Justificación escrita de props, estado y persistencia en base de datos** | ✅ Cumplido | Documentado en detalle en este README y en el informe. |
+
+---
+
+## 📁 11. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -155,21 +179,26 @@ Laboratorio10_Django/
     ├── vite.config.js
     └── src/
         ├── main.jsx      # Punto de entrada de la aplicación
-        ├── App.jsx       # Componente principal simplificado con estado global
+        ├── App.jsx       # Componente principal unificado
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
-        └── components/   # Directorio para los componentes reutilizables
-            ├── Tarjeta.jsx           # Contenedor visual reutilizable con prop children
-            ├── PrendaCard.jsx        # Tarjeta de prenda con estado local useState y botón
-            ├── PrendaList.jsx        # Lista con input controlado y filtro en tiempo real
-            ├── PrendaForm.jsx        # Formulario controlado con validación onSubmit
-            ├── PedidoCard.jsx        # Relación 1:N con total acumulado vía reduce()
-            └── DetallePedidoItem.jsx # Elemento anidado con cálculo de subtotal
+        └── components/   # Directorio de componentes reutilizables
+            ├── Tarjeta.jsx              # Contenedor visual reutilizable con prop children
+            ├── PrendaCard.jsx           # Tarjeta de prenda con estado useState y botón
+            ├── PrendaList.jsx           # Lista de prendas con input controlado de búsqueda
+            ├── PrendaForm.jsx           # Formulario controlado de prendas (Semana 8)
+            ├── PedidoCard.jsx           # Relación 1:N comercial con total acumulado
+            ├── DetallePedidoItem.jsx    # Línea de detalle anidada de pedido
+            ├── MaterialCard.jsx         # Tarjeta de insumo textil con reserva de muestra
+            ├── MaterialList.jsx         # Lista de insumos con búsqueda en tiempo real
+            ├── MaterialForm.jsx         # Formulario controlado de insumos textiles
+            ├── DespachoCard.jsx         # Relación N:M de logística con costo total
+            └── DetalleDespachoItem.jsx  # Elemento anidado de orden de despacho
 ```
 
 ---
 
-## 💻 11. Instalación y Ejecución del Frontend
+## 💻 12. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
@@ -181,6 +210,6 @@ npm run dev      # Inicia el servidor de desarrollo en http://localhost:5173/
 
 Comandos de validación ejecutados exitosamente:
 ```bash
-npm run lint     # oxlint -> 0 errores, 0 warnings
-npm run build    # vite build -> 24 módulos transformados exitosamente en dist/
+npm run lint     # oxlint -> 0 errores, 0 warnings en 15 archivos
+npm run build    # vite build -> 29 módulos transformados exitosamente en dist/
 ```

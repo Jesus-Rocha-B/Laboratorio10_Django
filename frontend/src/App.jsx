@@ -4,32 +4,45 @@ import PrendaCard from './components/PrendaCard'
 import PrendaList from './components/PrendaList'
 import PrendaForm from './components/PrendaForm'
 import PedidoCard from './components/PedidoCard'
+import MaterialCard from './components/MaterialCard'
+import MaterialList from './components/MaterialList'
+import MaterialForm from './components/MaterialForm'
+import DespachoCard from './components/DespachoCard'
 import Tarjeta from './components/Tarjeta'
 import {
   prendas as prendasIniciales,
   pedidos,
-  materiales,
+  materiales as materialesIniciales,
   proveedores,
   despachos,
-  costoDespacho,
 } from './datos'
 
 function App() {
   const nombreApp = 'UrbanTrend'
 
-  // Ejercicio 8: Estado para la lista de prendas que permite agregar nuevos registros
+  // Parte 1: Estado para la lista de prendas (comercial)
   const [listaPrendas, setListaPrendas] = useState(prendasIniciales)
 
   const handleAgregarPrenda = (nuevaPrenda) => {
-    // Inmutabilidad: Se crea un arreglo nuevo con spread operator (sin .push())
     setListaPrendas((prev) => [...prev, nuevaPrenda])
+  }
+
+  // Parte 2: Estado para la lista de materiales (investigación propia de logística)
+  const [listaMateriales, setListaMateriales] = useState(materialesIniciales)
+
+  const handleAgregarMaterial = (nuevoMaterial) => {
+    setListaMateriales((prev) => [...prev, nuevoMaterial])
   }
 
   return (
     <div className="contenedor">
-      <h1 className="titulo">{nombreApp} — Catálogo Streetwear</h1>
+      <h1 className="titulo">{nombreApp} — Plataforma Textil y Logística</h1>
 
-      {/* Ejercicio 4: Componente contenedor Tarjeta con prop especial children */}
+      {/* ======================================================== */}
+      {/* PARTE 1 — TIENDA COMERCIAL STREETWEAR                   */}
+      {/* ======================================================== */}
+
+      {/* Ejercicio 4: Componente contenedor Tarjeta con children */}
       <Tarjeta titulo="Prenda Destacada de la Colección (Contenedor Tarjeta con children)">
         <p style={{ marginTop: 0, color: '#475569', fontSize: '0.95rem' }}>
           Este contenido es inyectado dinámicamente como <code>children</code> dentro del componente <code>Tarjeta</code>:
@@ -45,14 +58,14 @@ function App() {
         </ul>
       </Tarjeta>
 
-      {/* Ejercicio 8: Formulario controlado con onSubmit y validación */}
+      {/* Ejercicio 8: Formulario controlado con validación */}
       <PrendaForm onAgregarPrenda={handleAgregarPrenda} />
 
       {/* Ejercicio 3 y 7: Lista modularizada con PrendaList y campo de búsqueda */}
       <h2>Catálogo de Prendas ({listaPrendas.length} registros)</h2>
       <PrendaList prendas={listaPrendas} />
 
-      {/* Demostración de valor por defecto en props (sin marca, talla ni stock especificado) */}
+      {/* Demostración de valor por defecto en props */}
       <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>
         <h3>Demostración de Props con Valores por Defecto:</h3>
         <ul className="lista">
@@ -60,7 +73,7 @@ function App() {
         </ul>
         <small style={{ color: '#64748b' }}>
           * Esta prenda no recibió `marca`, `talla` ni `stock`, por lo que tomó los valores por defecto: 
-          marca="UrbanTrend", talla="Estándar" y stock=0 (mostrando badge "Agotado").
+          marca=&quot;UrbanTrend&quot;, talla=&quot;Estándar&quot; y stock=0 (mostrando badge &quot;Agotado&quot;).
         </small>
       </div>
 
@@ -82,31 +95,50 @@ function App() {
         </ul>
       )}
 
-      <h2>Parte 2 — Logística e insumos textiles</h2>
+      {/* ======================================================== */}
+      {/* PARTE 2 — INVESTIGACIÓN PROPIA: LOGÍSTICA TEXTIL          */}
+      {/* ======================================================== */}
+      <h2 style={{ marginTop: '3rem', borderTop: '2px solid #cbd5e1', paddingTop: '1.5rem' }}>
+        Parte 2 — Investigación Propia: Logística e Insumos Textiles
+      </h2>
 
-      <h3>Materiales</h3>
-      {materiales.length === 0 ? (
-        <p className="vacio">No hay registros</p>
-      ) : (
-        <ul className="lista">
-          {materiales.map((m) => (
-            <li key={m.id} className="tarjeta">
-              <strong>{m.nombre}</strong> · {m.categoria_nombre} — S/ {Number(m.precio_unitario).toFixed(2)} por{' '}
-              {m.unidad_medida.toLowerCase()}
-              {m.stock === 0 ? (
-                <span className="etiqueta agotado">Sin stock</span>
-              ) : (
-                <span className="etiqueta">Stock: {m.stock}</span>
-              )}
-              {m.stock > 0 && m.stock < 200 && (
-                <span className="etiqueta alerta" style={{ fontWeight: 700 }}>Stock bajo</span>
-              )}
-            </li>
-          ))}
+      {/* Ejercicio 10: Contenedor Tarjeta con children para insumo crítico */}
+      <Tarjeta titulo="Insumo Crítico de Producción (Contenedor Tarjeta con children)">
+        <p style={{ marginTop: 0, color: '#475569', fontSize: '0.9rem' }}>
+          Material con alta rotación en almacén central, envuelto en el componente <code>Tarjeta</code> con <code>children</code>:
+        </p>
+        <ul className="lista" style={{ margin: 0 }}>
+          <MaterialCard
+            nombre="Tela Algodón Pima 50/1 Negro"
+            categoria="Telas y Tejidos"
+            unidadMedida="Metros"
+            precioUnitario="34.50"
+            stock={450}
+          />
         </ul>
-      )}
+      </Tarjeta>
 
-      <h3>Proveedores</h3>
+      {/* Ejercicio 10: Demostración de valores por defecto en props de MaterialCard */}
+      <div style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+        <h4>Demostración de Props con Valores por Defecto en Insumos:</h4>
+        <ul className="lista">
+          <MaterialCard nombre="Tela Muestra Experimental" precioUnitario="22.50" />
+        </ul>
+        <small style={{ color: '#64748b' }}>
+          * Este registro no recibió `categoria`, `unidadMedida` ni `stock`. Tomó los valores por defecto: 
+          categoria=&quot;Insumos Textiles&quot;, unidadMedida=&quot;Metros&quot; y stock=0 (badge &quot;Sin stock&quot;).
+        </small>
+      </div>
+
+      {/* Formulario controlado de Materiales (reglas de API Semana 8) */}
+      <MaterialForm onAgregarMaterial={handleAgregarMaterial} />
+
+      {/* Ejercicio 10: Lista de Materiales con map() y key */}
+      <h3>Inventario de Insumos Textiles ({listaMateriales.length} registros)</h3>
+      <MaterialList materiales={listaMateriales} />
+
+      {/* Proveedores */}
+      <h3>Proveedores Registrados</h3>
       {proveedores.length === 0 ? (
         <p className="vacio">No hay registros</p>
       ) : (
@@ -120,27 +152,21 @@ function App() {
         </ul>
       )}
 
-      <h3>Órdenes de despacho y sus materiales</h3>
+      {/* Ejercicio 10: Componente de relación N:M con modelo intermedio (DespachoCard y DetalleDespachoItem) */}
+      <h3>Órdenes de Despacho y sus Materiales (Relación N:M modularizada)</h3>
       {despachos.length === 0 ? (
         <p className="vacio">No hay registros</p>
       ) : (
         <ul className="lista">
           {despachos.map((orden) => (
-            <li key={orden.id} className="tarjeta">
-              <strong>{orden.codigo}</strong> → {orden.sucursal_nombre} · {orden.transportista_empresa} ({orden.estado})
-              <ul>
-                {orden.detalles.map((d) => (
-                  <li key={d.id}>
-                    {d.cantidad_despachada} × {d.material_nombre} ({d.lote_produccion}) — S/{' '}
-                    {(d.cantidad_despachada * Number(d.costo_unitario_historico)).toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-              <strong style={{ color: '#0f766e' }}>
-                {orden.detalles.length} {orden.detalles.length === 1 ? 'material' : 'materiales'} · Costo total: S/{' '}
-                {costoDespacho(orden).toFixed(2)}
-              </strong>
-            </li>
+            <DespachoCard
+              key={orden.id}
+              codigo={orden.codigo}
+              sucursal={orden.sucursal_nombre}
+              transportista={orden.transportista_empresa}
+              estado={orden.estado}
+              detalles={orden.detalles}
+            />
           ))}
         </ul>
       )}
