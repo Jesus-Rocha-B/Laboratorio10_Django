@@ -1,124 +1,74 @@
-# Laboratorio 09 — Interfaz React con Vite para UrbanTrend
+# Laboratorio 10 — Modularización en Componentes React para UrbanTrend
 
-**Curso:** Desarrollo de Aplicaciones Empresariales
-**Institución:** Tecsup — Sección 4 - C24 - Sección CD
-**Docente:** Yunior Bestard Aroche
-**Estudiante:** Erick Arturo Gamarra Mundaca
-**Repositorio:** https://github.com/ErickGamarra/Django_Lab09
-
----
-
-## 🎯 1. Objetivo
-
-Comenzar el bloque de front-end creando una interfaz con **React** y **Vite** para **UrbanTrend**, la plataforma de ropa streetwear y logística textil construida en Django durante las semanas anteriores.
-
-React no reemplaza a Django: lo complementa. Lo que en un Template de Django se escribe con `{{ }}`, `{% for %}` y `{% if %}`, en React se escribe con llaves, `map()` y condicionales de JavaScript.
-
-En este laboratorio la interfaz **todavía no consume la API**: los datos están escritos a mano en `frontend/src/App.jsx`, con la misma forma que las respuestas de la API REST del Laboratorio 08. La conexión real se hace en la Semana 12.
+**Curso:** Desarrollo de Aplicaciones Empresariales  
+**Institución:** Tecsup — Sección 4 - C24 - Sección CD  
+**Docente:** Yunior Bestard Aroche  
+**Estudiante:** Jesús Enrique Rocha Bobadilla  
+**Repositorio:** https://github.com/Jesus-Rocha-B/Laboratorio10_Django  
 
 ---
 
-## 🖥️ 2. Qué muestra la interfaz
+## 🎯 1. Objetivo del Laboratorio 10
 
-La página tiene dos partes:
+Evolucionar la interfaz de **UrbanTrend** desarrollada en React + Vite (Semana 9), aplicando el principio de diseño de **descomposición en componentes reutilizables**. 
 
-### Parte 1 — Tienda de ropa
-| Sección | Qué muestra |
-| :--- | :--- |
-| **Prendas** (5 registros) | Precio con dos decimales, `Agotado` o `Stock: n` según el stock, y el aviso `¡Últimas unidades!` cuando quedan 5 o menos. |
-| **Pedidos** (3 registros) | Cada pedido con la lista de prendas que compró (relación 1:N) y su total calculado. |
-
-### Parte 2 — Logística e insumos textiles (investigación propia)
-| Sección | Qué muestra |
-| :--- | :--- |
-| **Materiales** (5 registros) | Categoría, precio por unidad, `Sin stock` o `Stock: n`, y el aviso `Stock bajo` si hay menos de 200. |
-| **Proveedores** (3 registros) | Razón social, RUC y datos de contacto. |
-| **Órdenes de despacho** (2 registros) | Cada orden con los materiales que lleva (relación N:M mediante `DetalleDespacho`), cuántos son y el costo total del envío. |
-
-Todas las listas muestran `No hay registros` cuando están vacías. Los estilos se aplican con `className` (reglas en `App.css`) y con `style={{ }}`.
+En lugar de concentrar toda la estructura visual, datos mockeados y lógica en un único archivo monolítico (`App.jsx`), el proyecto se modulariza en componentes atómicos e independientes dentro de `src/components/`, separando los datos a `src/datos.js` y permitiendo un código desacoplado, mantenible y escalable.
 
 ---
 
-## 🧩 3. Qué se trabajó en cada ejercicio
+## 🧩 2. Ejercicio 1 — Recuperación del Proyecto e Identificación de Componentes
 
-| Ejercicio | Qué se hizo |
-| :--- | :--- |
-| 1–3 | Verificación de Node.js y npm, creación del proyecto con Vite y reconocimiento de su estructura. |
-| 4 | Primer componente con el nombre de la tienda y expresiones entre llaves (variable, cálculo y función). |
-| 5 | Lista de prendas recorrida con `map()` y `key` basada en el `id`. |
-| 6 | Renderizado condicional: ternario, `&&` y mensaje de lista vacía. |
-| 7 | Pedidos con sus detalles mediante listas anidadas y total por pedido. |
-| 8 | Estilos con `className`, `App.css` y `style={{ }}`; `lint` y `build`. |
-| 9–12 | La misma interfaz aplicada a la investigación propia: materiales, proveedores y despachos con sus detalles. |
-| 13 | Verificación de la consola, `lint`, `build` y que `node_modules` y `dist` no estén en el repositorio. |
-| 14 | Publicación en GitHub y documentación (este README). |
+### 2.1 Estructura Modular y Separación de Datos
+1. Se recuperó la carpeta `frontend/` y se verificó el correcto funcionamiento de las dependencias (`npm install`, `npm run dev`, `npm run build`).
+2. Se creó el directorio `src/components/` destinado a albergar los nuevos componentes de la aplicación.
+3. Se extrajeron los arreglos de datos mockeados (`prendas`, `pedidos`, `materiales`, `proveedores`, `despachos`) y las funciones de cálculo (`costoDespacho`, `totalPedido`) desde `App.jsx` hacia un archivo dedicado: `src/datos.js`.
+4. En `App.jsx` se reemplazaron los datos en duro mediante importaciones limpias desde `./datos`.
 
-Cada ejercicio quedó registrado en su propio commit del historial.
+### 2.2 Tres Candidatos a Componentes Identificados en `App.jsx`
+
+| Candidato | Tipo de Componente | Fragmento Identificado en `App.jsx` | Justificación Técnica de la Elección |
+| :--- | :--- | :--- | :--- |
+| **1. `PrendaCard`** (o `MaterialCard`) | **Tarjeta de Registro Individual** | Líneas donde se renderiza cada `<li>` de prenda con nombre, marca, talla, precio formateado y badges condicionales de stock (`Agotado`, `Stock: n`, `¡Últimas unidades!`). | **Responsabilidad única y reutilización visual:** Aísla la lógica de renderizado condicional de los estados de inventario. Al recibir el objeto `prenda` por `props`, el componente puede reutilizarse en cualquier sección (catálogo, ofertas, favoritos) sin duplicar código ni ensuciar el componente padre. |
+| **2. `DetallePedidoItem`** (o `DetalleDespachoItem`) | **Detalle de Relación Anidada (1:N / N:M)** | Líneas que renderizan cada ítem dentro de la sublista de un pedido (`cantidad × prenda — subtotal calculado`). | **Encapsulamiento de cálculo de línea:** Desacopla la entidad débil de la cabecera del pedido. Centraliza la fórmula `cantidad * precio_unitario` y el formateo a 2 decimales, facilitando que a futuro se agreguen promociones, badges de descuento o controles de edición sin afectar la tarjeta principal. |
+| **3. `PedidoCard`** (o `ListaRegistros`) | **Contenedor de Relación con Total Agregado** | Bloque completo de la orden con su código, cliente, estado, sublista de detalles y cálculo del importe total (`totalPedido(pedido)`). | **Composición y abstracción de agregados:** Agrupa la cabecera y el detalle en una unidad lógica con borde y estilos propios (`.tarjeta`). Maneja el cálculo del monto acumulado y simplifica `App.jsx`, reduciendo drásticamente su complejidad ciclomática. |
 
 ---
 
-## 📁 4. Estructura del repositorio
+## 📁 3. Estructura del repositorio
 
 ```text
-Django_Lab09/
-├── README.md             # este archivo
-├── requirements.txt      # dependencias del backend (Django y DRF)
+Laboratorio10_Django/
+├── README.md             # Documentación principal del Laboratorio 10
+├── requirements.txt      # Dependencias del backend (Django y DRF)
 ├── docs/
-│   └── LABORATORIO08.md  # documentación de la API REST del laboratorio anterior
-├── src/                  # backend Django del Laboratorio 08
-└── frontend/             # interfaz React + Vite (Laboratorio 09)
-    ├── index.html        # única página HTML; contiene el div donde React dibuja
-    ├── package.json      # dependencias y scripts (dev, build, lint)
+│   └── LABORATORIO08.md  # Documentación de la API REST del laboratorio anterior
+├── src/                  # Backend Django del Laboratorio 08
+└── frontend/             # Interfaz modular React + Vite (Laboratorio 10)
+    ├── index.html        # Contenedor raíz donde monta React
+    ├── package.json      # Dependencias y scripts (dev, build, lint)
     ├── vite.config.js
     └── src/
-        ├── main.jsx      # monta el componente App en la página
-        ├── App.jsx       # datos de ejemplo y toda la interfaz (JSX)
-        ├── App.css       # estilos de la página
-        └── index.css     # vacío
+        ├── main.jsx      # Punto de entrada de la aplicación
+        ├── App.jsx       # Componente principal simplificado
+        ├── App.css       # Estilos visuales de la aplicación
+        ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
+        └── components/   # Directorio para los componentes reutilizables
 ```
 
 ---
 
-## 💻 5. Instalar y ejecutar el frontend
+## 💻 4. Instalación y Ejecución del Frontend
 
-Requiere Node.js (versión LTS) y npm.
-
-```bash
-git clone https://github.com/ErickGamarra/Django_Lab09.git
-cd Django_Lab09/frontend
-npm install      # instala las dependencias (crea node_modules/)
-npm run dev      # servidor de desarrollo en http://localhost:5173/
-```
-
-Otros comandos:
+Requiere Node.js (versión LTS) y npm:
 
 ```bash
-npm run lint     # revisa el código
-npm run build    # genera la versión para producción en dist/
+cd frontend
+npm install      # Instala las dependencias
+npm run dev      # Inicia el servidor de desarrollo en http://localhost:5173/
 ```
 
-`node_modules/` y `dist/` no se suben al repositorio (están en `frontend/.gitignore`). El backend de Django **no es necesario** para ver la interfaz.
-
----
-
-## 🔧 6. Backend de Django (opcional)
-
-El backend es el del Laboratorio 08, con algunas correcciones. Solo hace falta si se quiere comparar los datos de ejemplo con las respuestas reales de la API.
-
+Otros comandos de validación:
 ```bash
-pip install -r requirements.txt
-python src/manage.py migrate
-python src/seed_prendas.py
-python src/seed_logistics.py
-python src/seed_pedidos.py
-python src/manage.py runserver     # API en http://127.0.0.1:8000/api/
+npm run build    # Compila la versión para producción en dist/
+npm run lint     # Analiza el código con oxlint
 ```
-
-Cambios hechos sobre el Laboratorio 08:
-
-* `MaterialViewSet` usa `select_related('categoria')` (de 9 consultas a 1 en `/api/materiales/`).
-* Se eliminó el `requirements.txt` de `src/` (era un `pip freeze` del sistema); se usa el de la raíz.
-* Nuevo `src/seed_pedidos.py` para tener pedidos de ejemplo en `/api/pedidos/`.
-* Se eliminó `store/api_urls.py` (sin uso) y el `validate_stock` redundante de `MaterialSerializer`.
-
-La documentación completa de la API está en [`docs/LABORATORIO08.md`](docs/LABORATORIO08.md).
