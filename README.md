@@ -180,33 +180,170 @@ Se desarrollaron y modularizaron cinco componentes en archivos independientes de
 
 ---
 
-## 🧩 12. Formulario Controlado con Validación en la Investigación Propia (`MaterialForm.jsx`)
+## 🧩 12. Ejercicio 12 — Relación Anidada y Formulario en la Investigación Propia
 
-* **Componente:** `src/components/MaterialForm.jsx`.
-* **Manejo de eventos:** `onSubmit={handleSubmit}` con `e.preventDefault()`.
-* **Inmutabilidad:** En `App.jsx`, `handleAgregarMaterial` utiliza `setListaMateriales(prev => [...prev, nuevoMaterial])`, preservando la inmutabilidad de arreglos en React.
+### 12.1 Relación Anidada con un Componente dentro de Otro (Modelo Intermedio N:M)
+En el módulo de logística (`logistics`), la relación entre una **Orden de Despacho** (`OrdenDespacho`) y los **Materiales Textiles** (`Material`) se articula a través del modelo intermedio **`DetalleDespacho`** (el cual registra cantidad despachada, costo unitario histórico y lote de producción).
 
-### 🔎 Evidencias de Validación del Formulario:
-* **Envío Válido:**
-  * Nombre: `Tela Rib 2x1 Algodón Peinado`
-  * Categoría: `Telas y Tejidos`
-  * Unidad: `Metros`
-  * Precio: `28.50`
-  * Stock: `120`
-  * Resultado: Se agrega el registro a la lista en tiempo real, se limpian los campos y se muestra el mensaje de confirmación:  
-    `✅ ¡Insumo textil registrado en el inventario con éxito!`
-* **Envío Inválido 1 (Regla DRF `precio_unitario > 0`):**
-  * Entrada: Precio `0` o `-10.00`.
-  * Resultado: Se interrumpe el guardado y se despliega la advertencia:  
-    `⚠️ Error: El precio unitario debe ser mayor que cero (S/ 0.00), según la regla de la API.`
-* **Envío Inválido 2 (Regla DRF `stock >= 0`):**
-  * Entrada: Stock `-5`.
-  * Resultado: Se interrumpe el guardado y se despliega la advertencia:  
-    `⚠️ Error: El stock en almacén no puede ser negativo, según la regla de la API.`
+Esta relación se implementó mediante dos componentes anidados:
+1. **Componente Padre / Contenedor (`src/components/DespachoCard.jsx`):**
+   * Recibe las propiedades de la cabecera: `{ codigo, sucursal, transportista, estado, detalles = [] }`.
+   * Calcula el costo total del envío acumulando los subtotales con `.reduce()`:
+     ```jsx
+     const costoTotal = detalles.reduce(
+       (acum, d) => acum + d.cantidad_despachada * Number(d.costo_unitario_historico),
+       0
+     ).toFixed(2)
+     ```
+   * Itera la lista de detalles y renderiza una instancia de `DetalleDespachoItem` por cada elemento con `key={d.id}`.
+
+2. **Componente Hijo Anidado (`src/components/DetalleDespachoItem.jsx`):**
+   * Recibe `{ material, cantidad, costoUnitario, lote }`.
+   * Calcula el subtotal individual (`cantidad * costoUnitario`) y renderiza la línea de detalle:
+     ```jsx
+     function DetalleDespachoItem({ material, cantidad, costoUnitario, lote }) {
+       const subtotal = (cantidad * Number(costoUnitario)).toFixed(2)
+       return (
+         <li>
+           {cantidad} × {material} ({lote}) — S/ {subtotal}
+         </li>
+       )
+     }
+     ```
 
 ---
 
-## ✅ 13. Checklist Obligatorio Antes de Continuar — Parte 2
+### 12.2 Formulario Controlado con `onSubmit`, `preventDefault` y Validación (`MaterialForm.jsx`)
+Se implementó `src/components/MaterialForm.jsx` para dar de alta nuevos insumos textiles en el inventario:
+* **Campos Controlados:** Se enlazan mediante `value` y `onChange` vinculados a estados locales individuales (`nombre`, `categoria`, `unidadMedida`, `precioUnitario`, `stock`).
+* **Envío Seguro:** Se intercepta el evento del formulario con `onSubmit={handleSubmit}` y se invoca `e.preventDefault()` para cancelar la recarga estándar del navegador.
+* **Inserción Inmutable:** Al validar exitosamente, se comunica con `App.jsx` mediante el prop callback `onAgregarMaterial(nuevoMaterial)`. El estado se actualiza inmutablemente:
+  ```jsx
+  const handleAgregarMaterial = (nuevoMaterial) => {
+    setListaMateriales((prev) => [...prev, nuevoMaterial])
+  }
+  ```
+  Cumpliendo estrictamente con la regla de React de no mutar arreglos con `.push()`.
+* **Limpieza de Campos:** Tras agregar el registro, se restablecen los inputs a su estado inicial (`setNombre('')`, `setPrecioUnitario('')`, etc.).
+
+---
+
+### 12.3 Documentación de Envíos: Válido e Inválido
+
+#### ✅ Caso 1: Envío Válido
+* **Datos ingresados en el formulario:**
+  * **Nombre del Insumo:** `Tela Rib 2x1 Algodón Peinado`
+  * **Categoría:** `Telas y Tejidos`
+  * **Unidad de Medida:** `Metros`
+  * **Precio Unitario (S/):** `28.50`
+  * **Stock en Almacén:** `120`
+* **Comportamiento y Resultado:**
+  1. Las validaciones se ejecutan correctamente sin interrupción.
+  2. El nuevo insumo se incorpora al final del inventario renderizado por `MaterialList.jsx` mostrando su precio de `S/ 28.50`, stock de `120 metros` y botón interactivo `+ Reservar muestra`.
+  3. Los campos del formulario se limpian de inmediato.
+  4. Se muestra el mensaje visual de éxito en verde:  
+     `✅ ¡Insumo textil registrado en el inventario con éxito!`
+
+#### ❌ Caso 2: Envío Inválido (Regla DRF Semana 8: `validate_precio_unitario > 0.00`)
+* **Datos ingresados en el formulario:**
+  * **Nombre del Insumo:** `Hilo Mercerizado Calibre 40`
+  * **Precio Unitario (S/):** `0.00` (o valor negativo `-5.00`)
+  * **Stock en Almacén:** `50`
+* **Comportamiento y Resultado:**
+  1. La validación `precioNum <= 0` intercepta el guardado ejecutando `return`.
+  2. No se altera la lista de materiales ni se re-renderizan los registros existentes.
+  3. Se mantiene el texto en los campos para corrección y se muestra el mensaje de error en rojo:  
+     `⚠️ Error: El precio unitario debe ser mayor que cero (S/ 0.00), según la regla de la API.`
+
+#### ❌ Caso 3: Envío Inválido (Regla DRF Semana 8: `validate_stock >= 0`)
+* **Datos ingresados en el formulario:**
+  * **Nombre del Insumo:** `Etiqueta Tejida Satinada`
+  * **Precio Unitario (S/):** `1.20`
+  * **Stock en Almacén:** `-10`
+* **Comportamiento y Resultado:**
+  1. La validación `stockNum < 0` intercepta el guardado.
+  2. Se cancela la inserción y se despliega el mensaje de error:  
+     `⚠️ Error: El stock en almacén no puede ser negativo, según la regla de la API.`
+
+---
+
+## 🧩 13. Ejercicio 13 — Verificar la Interfaz de la Investigación Propia
+
+### 13.1 Verificación de la Consola del Navegador (0 Advertencias)
+Se inspeccionó la consola de desarrollo de React en el navegador para comprobar la ausencia de advertencias comunes:
+1. **Ausencia de advertencias sobre `key`:**
+   * React advierte: `Warning: Each child in a list should have a unique "key" prop.`
+   * **Verificación:** Todos los iteradores `.map()` en la aplicación (`materialesFiltrados.map()`, `prendasFiltradas.map()`, `pedidos.map()`, `detalles.map()`, `despachos.map()`, `proveedores.map()`) definen una clave unívoca y persistente basada en identificadores únicos de base de datos (`key={m.id}`, `key={prenda.id}`, `key={d.id}`, etc.). No se utilizaron índices del arreglo.
+2. **Ausencia de advertencias sobre campos con `value` sin `onChange`:**
+   * React advierte: `Warning: You provided a 'value' prop to a form field without an 'onChange' handler. This will render a read-only field.`
+   * **Verificación:** Todos los campos de entrada (`<input>`, `<select>`) en `PrendaForm.jsx`, `MaterialForm.jsx`, `PrendaList.jsx` y `MaterialList.jsx` están estrictamente controlados mediante parejas bidireccionales `value={estado}` y `onChange={(e) => setEstado(e.target.value)}`. No existen campos desatendidos o de sólo lectura accidental.
+
+---
+
+### 13.2 Ejecución de `npm run lint` (`oxlint`)
+Se ejecutó el analizador estático de código configurado en el proyecto (`oxlint`):
+
+```bash
+> frontend@0.0.0 lint
+> oxlint
+
+Found 0 warnings and 0 errors.
+Finished in 17ms on 15 files with 104 rules using 12 threads.
+```
+* **Resultado:** 0 advertencias, 0 errores en los 15 archivos fuente del frontend.
+
+---
+
+### 13.3 Ejecución de `npm run build` (`vite build`)
+Se ejecutó la compilación de producción para validar la transformación de JSX a JavaScript estándar y la generación de activos:
+
+```bash
+> frontend@0.0.0 build
+> vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 29 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.47 kB │ gzip:  0.30 kB
+dist/assets/index-BN3Zpx6x.css    0.58 kB │ gzip:  0.34 kB
+dist/assets/index-BbWax_FM.js   239.70 kB │ gzip: 73.26 kB
+
+✓ built in 131ms
+```
+* **Resultado:** Compilación exitosa de los 29 módulos sin errores sintácticos, de importación o de empaquetado.
+
+---
+
+### 13.4 Comprobación de que `node_modules` y `dist` NO están en el repositorio
+Se verificó mediante Git que los directorios pesados y generados automáticamente no forman parte del control de versiones:
+
+1. **Consulta con `git ls-files`:**
+   ```bash
+   git ls-files "*node_modules*" "*dist*"
+   # (Salida vacía: confirma que ningún archivo de node_modules o dist está rastreado)
+   ```
+2. **Consulta con `git check-ignore`:**
+   ```bash
+   git check-ignore frontend/node_modules frontend/dist
+   # Salida:
+   # frontend/node_modules
+   # frontend/dist
+   ```
+3. **Reglas de exclusión en `.gitignore`:**
+   Tanto en `frontend/.gitignore` como en el archivo raíz `.gitignore`, se encuentran explícitamente declaradas las directivas:
+   ```gitignore
+   node_modules/
+   dist/
+   dist-ssr/
+   frontend/node_modules/
+   frontend/dist/
+   ```
+
+---
+
+## ✅ 14. Checklist Obligatorio Antes de Continuar — Parte 2
 
 A continuación se detalla la verificación de cada uno de los 9 criterios exigidos en la guía del laboratorio:
 
@@ -220,23 +357,23 @@ A continuación se detalla la verificación de cada uno de los 9 criterios exigi
 | **6** | Un campo controlado (`value` y `onChange`) filtra la lista. | Capturas de dos búsquedas. | ✅ **CUMPLIDO** | `MaterialList.jsx` implementa input controlado `busqueda` que filtra por nombre o categoría sin distinguir mayúsculas, con mensaje de no coincidencias. |
 | **7** | Un formulario controlado con `onSubmit` y `preventDefault` agrega un registro sin modificar el arreglo y valida una regla con mensaje de error. | Capturas del envío válido y del inválido. | ✅ **CUMPLIDO** | `MaterialForm.jsx` valida `precio_unitario > 0` y `stock >= 0`, limpia campos tras éxito y actualiza `listaMateriales` con spread operator. |
 | **8** | La consola del navegador no muestra advertencias y `npm run lint` y `npm run build` terminan sin errores. | Capturas de la consola y de la terminal. | ✅ **CUMPLIDO** | `oxlint` validó 15 archivos con 0 errores y 0 warnings; `vite build` compiló los 29 módulos limpiamente en `dist/`. |
-| **9** | Se explica por escrito qué resuelven las `props` y el `estado`, y qué falta para guardar los datos en la base de datos de Django. | Párrafo de justificación. | ✅ **CUMPLIDO** | Justificación detallada redactada en la Sección 14 de este documento. |
+| **9** | Se explica por escrito qué resuelven las `props` y el `estado`, y qué falta para guardar los datos en la base de datos de Django. | Párrafo de justificación. | ✅ **CUMPLIDO** | Justificación detallada redactada en la Sección 15 de este documento. |
 
 ---
 
-## 💡 14. Justificación Teórica: Props, Estado y Persistencia en Django (Criterio 9)
+## 💡 15. Justificación Teórica: Props, Estado y Persistencia en Django (Criterio 9)
 
-### 14.1 ¿Qué resuelven las `props`?
+### 15.1 ¿Qué resuelven las `props`?
 Las **`props` (propiedades)** resuelven la **comunicación unidireccional y jerárquica de datos** (*top-down* o de componente padre a componente hijo) en la arquitectura de React. Permiten que los componentes sean funciones puras, altamente reutilizables y desacoplados de la lógica de negocio central:
 * Permiten parametrizar componentes visuales (`MaterialCard`, `PrendaCard`, `Tarjeta`) para que muestren distinta información según los datos suministrados por el componente superior (`App`).
 * Son de **sólo lectura (inmutables)**, lo que impide que un componente hijo altere por error los datos del padre o de componentes vecinos, garantizando la predictibilidad y estabilidad del flujo de información en la aplicación.
 
-### 14.2 ¿Qué resuelve el `estado` (`useState`)?
+### 15.2 ¿Qué resuelve el `estado` (`useState`)?
 El **`estado` (`useState`)** resuelve la **reactividad, el dinamismo y la persistencia de datos temporales en memoria** dentro del ciclo de vida de la aplicación:
 * A diferencia de las variables locales comunes de JavaScript (que se destruyen y reinician en cada renderizado), las variables de estado se almacenan en los nodos internos del árbol de fibras de React (*Fiber Tree*).
 * Al invocar la función actualizadora (`setState`), React detecta la necesidad de un nuevo ciclo de reconciliación, compara el *Virtual DOM* con el DOM del navegador y actualiza únicamente los nodos específicos que cambiaron, permitiendo una experiencia de usuario fluida sin recargas completas de página (*Single Page Application*).
 
-### 14.3 ¿Qué falta para guardar los datos en la base de datos de Django?
+### 15.3 ¿Qué falta para guardar los datos en la base de datos de Django?
 Actualmente, los registros añadidos mediante los formularios `PrendaForm` y `MaterialForm` se almacenan **únicamente en la memoria RAM del navegador** (dentro del estado de React). Si el usuario refresca la página (`F5`), los nuevos registros desaparecen y la aplicación vuelve a cargar la lista base de `datos.js`.
 
 Para que los datos se guarden permanentemente en la base de datos de Django (SQLite/PostgreSQL), se requiere implementar la integración de cliente-servidor mediante los siguientes cuatro pasos:
@@ -251,7 +388,7 @@ Para que los datos se guarden permanentemente en la base de datos de Django (SQL
 
 ---
 
-## 📁 15. Estructura del Proyecto
+## 📁 16. Estructura del Proyecto
 
 ```text
 Laboratorio10_Django/
@@ -285,7 +422,7 @@ Laboratorio10_Django/
 
 ---
 
-## 💻 16. Instalación y Ejecución del Frontend
+## 💻 17. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
@@ -299,9 +436,9 @@ npm run dev      # Inicia el servidor local de desarrollo en http://localhost:51
 ```bash
 # 1. Análisis estático de código (Linter):
 npm run lint
-# Resultado: oxlint -> 0 errores, 0 warnings en 15 archivos (tiempo de ejecución: 74ms)
+# Resultado: oxlint -> 0 errores, 0 warnings en 15 archivos (17ms)
 
 # 2. Compilación de producción (Build):
 npm run build
-# Resultado: vite build -> 29 módulos transformados exitosamente en dist/ (tiempo: 256ms)
+# Resultado: vite build -> 29 módulos transformados exitosamente en dist/ (131ms)
 ```
