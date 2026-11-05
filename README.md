@@ -1,143 +1,132 @@
-# Laboratorio 10 — Modularización en Componentes React para UrbanTrend
+# Laboratorio 10 — React + Vite: Componentes, Props, Estado y Eventos
 
-**Curso:** Desarrollo de Aplicaciones Empresariales  
-**Institución:** Tecsup — Sección 4 - C24 - Sección CD  
-**Docente:** Yunior Bestard Aroche  
 **Estudiante:** Jesús Enrique Rocha Bobadilla  
-**Repositorio:** https://github.com/Jesus-Rocha-B/Laboratorio10_Django  
+**Curso:** Desarrollo de Aplicaciones Empresariales  
+**Institución:** Tecsup  
+**Repositorio:** `Laboratorio10_Django`  
+**Tecnologías:** React 19, Vite, JavaScript (ES6+), CSS3, Oxlint, Django REST Framework  
 
 ---
 
-## 🎯 1. Objetivo del Laboratorio 10
+## 📋 Resumen del Laboratorio
 
-Evolucionar la interfaz de **UrbanTrend** desarrollada en React + Vite (Semana 9), aplicando el principio de diseño de **descomposición en componentes reutilizables**. 
+En este laboratorio se modularizó la interfaz monolítica construida en el Laboratorio 09, separando la lógica y presentación en componentes funcionales reutilizables, gestionando el flujo de datos mediante **props**, implementando interactividad y reactividad con el hook **`useState`**, controlando eventos del usuario (`onClick`, `onChange`, `onSubmit`), aplicando inmutabilidad en arreglos y validando reglas de negocio heredadas del backend en **Django REST Framework (Semana 8)**.
 
-En lugar de concentrar toda la estructura visual, datos mockeados y lógica en un único archivo monolítico (`App.jsx`), el proyecto se modulariza en componentes atómicos e independientes dentro de `src/components/`, separando los datos a `src/datos.js` y permitiendo un código desacoplado, mantenible y escalable.
-
----
-
-## 🧩 2. Ejercicio 1 — Recuperación del Proyecto e Identificación de Componentes
-
-### 2.1 Estructura Modular y Separación de Datos
-1. Se recuperó la carpeta `frontend/` y se verificó el correcto funcionamiento de las dependencias (`npm install`, `npm run dev`, `npm run build`).
-2. Se creó el directorio `src/components/` destinado a albergar los nuevos componentes de la aplicación.
-3. Se extrajeron los arreglos de datos mockeados (`prendas`, `pedidos`, `materiales`, `proveedores`, `despachos`) y las funciones de cálculo (`costoDespacho`, `totalPedido`) desde `App.jsx` hacia un archivo dedicado: `src/datos.js`.
-4. En `App.jsx` se reemplazaron los datos en duro mediante importaciones limpias desde `./datos`.
-
-### 2.2 Tres Candidatos a Componentes Identificados en `App.jsx`
-
-| Candidato | Tipo de Componente | Fragmento Identificado en `App.jsx` | Justificación Técnica de la Elección |
-| :--- | :--- | :--- | :--- |
-| **1. `PrendaCard`** (o `MaterialCard`) | **Tarjeta de Registro Individual** | Líneas donde se renderiza cada `<li>` de prenda con nombre, marca, talla, precio formateado y badges condicionales de stock (`Agotado`, `Stock: n`, `¡Últimas unidades!`). | **Responsabilidad única y reutilización visual:** Aísla la lógica de renderizado condicional de los estados de inventario. Al recibir el objeto `prenda` por `props`, el componente puede reutilizarse en cualquier sección (catálogo, ofertas, favoritos) sin duplicar código ni ensuciar el componente padre. |
-| **2. `DetallePedidoItem`** (o `DetalleDespachoItem`) | **Detalle de Relación Anidada (1:N / N:M)** | Líneas que renderizan cada ítem dentro de la sublista de un pedido (`cantidad × prenda — subtotal calculado`). | **Encapsulamiento de cálculo de línea:** Desacopla la entidad débil de la cabecera del pedido. Centraliza la fórmula `cantidad * precio_unitario` y el formateo a 2 decimales, facilitando que a futuro se agreguen promociones, badges de descuento o controles de edición sin afectar la tarjeta principal. |
-| **3. `PedidoCard`** (o `ListaRegistros`) | **Contenedor de Relación con Total Agregado** | Bloque completo de la orden con su código, cliente, estado, sublista de detalles y cálculo del importe total (`totalPedido(pedido)`). | **Composición y abstracción de agregados:** Agrupa la cabecera y el detalle en una unidad lógica con borde y estilos propios (`.tarjeta`). Maneja el cálculo del monto acumulado y simplifica `App.jsx`, reduciendo drásticamente su complejidad ciclomática. |
+El trabajo se divide en dos secciones obligatorias:
+1. **Parte 1 — Tienda Comercial Streetwear (`store`):** Prendas, Pedidos y Detalles de Pedido.
+2. **Parte 2 — Investigación Propia: Logística e Insumos Textiles (`logistics`):** Materiales textiles, Proveedores, Órdenes de Despacho y Detalles de Despacho.
 
 ---
 
-## 🧩 3. Ejercicio 2 — Crear el Primer Componente Funcional
+## 🧩 1. Ejercicio 1 — Separar datos en archivo `datos.js`
 
-1. Se creó el componente `src/components/PrendaCard.jsx` con nombre en mayúscula (`PascalCase`), retornando la estructura JSX de un registro de prenda con exportación por defecto (`export default PrendaCard`).
-2. Se importó en `App.jsx` y se renderizó dos veces consecutivas para verificar el ciclo de vida e instanciación de componentes independientes en React.
-3. **Regla de nomenclatura en JSX:** Se documentó que si el componente se nombra en minúscula (`<prendaCard />`), el compilador de JSX lo interpreta erróneamente como una etiqueta nativa de HTML5 no estándar (`document.createElement('prendacard')`), omitiendo la invocación a la función de JavaScript.
-
----
-
-## 🧩 4. Ejercicio 3 — Pasar Datos con Props y Armar la Lista
-
-1. **Desestructuración y Valores por Defecto en `PrendaCard.jsx`:**
-   * Se modificó `PrendaCard` para recibir `{ nombre, marca = 'UrbanTrend', talla = 'Estándar', precio = '0.00', stock = 0 }`.
-   * Si una prenda no tiene stock o marca definida, se le asigna el valor por defecto gracias a los parámetros por defecto de ES6 (`stock = 0`, `marca = 'UrbanTrend'`).
-2. **Creación del Componente de Colección `PrendaList.jsx`:**
-   * Se creó `src/components/PrendaList.jsx` que recibe el arreglo `prendas` por props.
-   * Renderiza el estado vacío si el arreglo no tiene registros (`prendas.length === 0`).
-   * Itera la colección mediante `.map()` y asigna la propiedad requerida `key={prenda.id}` a cada elemento `<PrendaCard />`.
-3. **Integración en `App.jsx`:**
-   * Se reemplazó el bucle de prendas en `App.jsx` por `<PrendaList prendas={prendas} />`.
-   * Se agregó un caso de prueba independiente con `<PrendaCard nombre="Polera Básica Urban Sample" precio="79.90" />` para evidenciar visualmente el funcionamiento de los valores por defecto (marca="UrbanTrend", talla="Estándar" y badge="Agotado").
+* Se creó el archivo `src/datos.js` conteniendo los arreglos de datos iniciales (`prendas`, `pedidos`, `materiales`, `proveedores`, `despachos`) y las funciones de utilidad (`formatearPrecio`, `formatearFecha`).
+* Se exportaron usando sintaxis ES Modules (`export const ...`) y se importaron en `App.jsx`, reduciendo drásticamente el tamaño del archivo raíz y aislando los datos mockeados de la capa visual.
+* Se configuró el directorio `src/components/` con `.gitkeep` para organizar los componentes funcionales.
 
 ---
 
-## 🧩 5. Ejercicio 4 — Componente Contenedor con Children
+## 🧩 2. Ejercicio 2 — Crear el primer componente funcional (`PrendaCard.jsx`)
 
-1. **Creación de `src/components/Tarjeta.jsx`:**
-   * Recibe `{ titulo, children }`.
-   * Encapsula un marco visual consistente con estilos, encabezado condicional y un contenedor interno para renderizar cualquier elemento JSX recibido entre las etiquetas de apertura y cierre.
-2. **Equivalencia con Django Templates (Semana 6):**
-   * En los Templates de Django, el contenedor base utiliza la etiqueta de bloque `{% block content %} ... {% endblock %}` dentro de una plantilla padre (`base.html`). Las plantillas hijas usan `{% extends 'base.html' %}` para inyectar su propio HTML dentro de ese bloque.
-   * En React, la prop especial `children` cumple exactamente el mismo rol de **ranura de inserción (slot)**: todo lo colocado entre `<Tarjeta>` y `</Tarjeta>` es inyectado dentro del componente en el lugar donde se renderiza `{children}`.
+* Se implementó `src/components/PrendaCard.jsx`, el cual representa una tarjeta visual para una prenda.
+* Se importó y renderizó dos veces en `App.jsx`, comprobando la reutilización de interfaz.
 
----
-
-## 🧩 6. Ejercicio 5 — Componentes dentro de Componentes: Relación 1:N
-
-1. **Componente Anidado `src/components/DetallePedidoItem.jsx`:**
-   * Representa cada línea de compra dentro de un pedido.
-   * Recibe `{ prenda, cantidad, precioUnitario }` y calcula internamente el subtotal: `(cantidad * Number(precioUnitario)).toFixed(2)`.
-2. **Componente Padre `src/components/PedidoCard.jsx`:**
-   * Modela la cabecera del pedido (1:N) recibiendo `{ codigo, cliente, estado, detalles }`.
-   * Realiza el cálculo del total general acumulado mediante JavaScript con `reduce()`.
-   * Mapea el arreglo de detalles instanciando `<DetallePedidoItem key={d.id} prenda={d.prenda_nombre} cantidad={d.cantidad} precioUnitario={d.precio_unitario} />`, adaptando los nombres de campos de la API (`snake_case`) a props de componentes (`camelCase`).
-3. **Inmutabilidad de las Props (¿Por qué no deben modificarse?):**
-   * React exige que los componentes actúen como **funciones puras** respecto a sus props. Las props fluyen unidireccionalmente desde el padre hacia los hijos y pertenecen exclusivamente al padre.
-   * Si un componente intenta mutar una prop directamente (`props.cantidad = 10`), el motor de React (que congela los objetos con `Object.freeze`) lanza la excepción:  
-     `TypeError: Cannot assign to read only property 'cantidad' of object '#<Object>'`.
+### ❓ Pregunta teórica: Diferencia entre `<PrendaCard />` y `<prendacard />` en JSX
+En JSX (y en la transformación de Babel/Vite a JavaScript):
+* **PascalCase (`<PrendaCard />`):** React interpreta que el identificador inicia con mayúscula y lo compila como una referencia a una variable o función JavaScript (`React.createElement(PrendaCard)`). Esto permite invocar la función de nuestro componente.
+* **Minúsculas (`<prendacard />`):** React asume que las etiquetas que inician con minúscula son **elementos nativos del DOM de HTML** (`React.createElement('prendacard')`). Al no existir una etiqueta estándar `<prendacard>` en la especificación HTML5, el navegador la creará como un elemento HTML desconocido (`HTMLUnknownElement`), provocando advertencias y la falta de renderizado de la lógica del componente.
 
 ---
 
-## 🧩 7. Ejercicio 6 — Agregar Estado y un Evento de Clic
+## 🧩 3. Ejercicio 3 — Pasar datos mediante props
 
-1. **Implementación de Estado Local con `useState`:**
-   * En `src/components/PrendaCard.jsx`, se agregó el hook `const [contador, setContador] = useState(0)` para gestionar las unidades agregadas de forma individual e independiente en cada tarjeta.
-2. **Desactivación Condicional del Botón:**
-   * Se configuró el atributo `disabled={stock === 0 || contador >= stock}`. Cuando una prenda no tiene existencias (`stock === 0`) o se alcanza el límite disponible, el botón se bloquea automáticamente evitando selecciones inválidas.
-3. **Renderizado Condicional del Valor:**
-   * El indicador visual solo se dibuja en pantalla cuando el valor es estrictamente mayor que cero mediante el operador lógico: `{contador > 0 && <span>Seleccionados: {contador}</span>}`.
-4. **Aislamiento de Estado entre Componentes:**
-   * Al interactuar con el botón de una prenda (ej. *Polo Oversize*), su contador se incrementa sin alterar el estado de las demás prendas, comprobando que cada instancia mantiene su propio ámbito de memoria en React.
-5. **¿Por qué una variable normal (`let`) no actualiza la pantalla?:**
-   * React no monitoriza cambios directos en variables convencionales de JavaScript en memoria. No existe un disparador (*trigger*) que le ordene volver a ejecutar la función del componente ni re-renderizar el Virtual DOM.
-   * Además, si el componente se re-renderizara por otro motivo externo, la función se volvería a ejecutar de arriba hacia abajo y la variable `let contador = 0` se reiniciaría a cero, perdiendo el valor previo. `useState` garantiza la persistencia del dato a través de los ciclos de renderizado y notifica a React para actualizar la vista.
+* Se modificó `PrendaCard.jsx` para recibir props desestructuradas: `{ nombre, marca = 'UrbanTrend', talla = 'Estándar', precio, stock = 0 }`.
+* Se definieron **valores por defecto** para `marca`, `talla` y `stock`, evitando errores `undefined` y garantizando renderizados consistentes cuando el llamador omite propiedades opcionales.
+* Se creó `src/components/PrendaList.jsx`, el cual recibe un arreglo `prendas` por props y lo recorre con `.map()`, asignando `key={prenda.id}` a cada elemento.
+
+### ❓ Pregunta teórica: ¿Por qué es obligatorio asignar `key` en listas de React?
+React utiliza un algoritmo de reconciliación (*Virtual DOM Diffing*) para identificar con rapidez qué elementos han cambiado, se han agregado o eliminado.
+* La prop `key` proporciona una **identidad única y persistente** a cada elemento de la colección entre re-renderizados.
+* Si no se proporciona `key` (o si se usa el índice del arreglo y la lista se reordena/filtra), React debe comparar y re-renderizar todos los nodos hijos del DOM ciegamente, degradando el rendimiento y provocando inconsistencias con estados locales o entradas de formulario.
 
 ---
 
-## 🧩 8. Ejercicio 7 — Campo Controlado que Filtra la Lista
+## 🧩 4. Ejercicio 4 — Componente contenedor con `children`
 
-1. **Implementación de Campo Controlado en `src/components/PrendaList.jsx`:**
-   * Se agregó el estado `const [busqueda, setBusqueda] = useState('')`.
-   * El `<input>` vincula su valor a `value={busqueda}` y su evento a `onChange={(e) => setBusqueda(e.target.value)}`, convirtiéndose en un componente completamente controlado por React.
-2. **Filtrado Invariable a Mayúsculas y Minúsculas (*Case-Insensitive*):**
-   * La lista se filtra en tiempo real mediante:
-     ```javascript
-     const prendasFiltradas = prendas.filter((p) =>
-       p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-     )
-     ```
-3. **Manejo de Lista sin Coincidencias:**
-   * Si `prendasFiltradas.length === 0`, se muestra el mensaje amigable:  
-     `No se encontraron prendas que coincidan con "{busqueda}".`
+* Se creó `src/components/Tarjeta.jsx`, un componente contenedor que recibe `{ titulo, children }`.
+* Envuelve contenido dinámico con un encabezado temático y estilos unificados de tarjeta.
+* En `App.jsx`, se utilizó `<Tarjeta titulo="...">` para envolver la prenda destacada y el insumo crítico.
+
+### ❓ Pregunta teórica: ¿A qué concepto de Django Templates equivale la prop `children`?
+La prop `children` de React equivale al mecanismo de **bloques de herencia de plantillas (`{% block content %} ... {% endblock %}`)** en Django Templates:
+* En Django, la plantilla base define un hueco con `{% block nombre %}` que las plantillas hijas rellenan.
+* En React, `Tarjeta` define la estructura contenedora general y coloca `{children}` donde se inyectará cualquier contenido JSX proporcionado entre las etiquetas de apertura y cierre (`<Tarjeta>...</Tarjeta>`).
 
 ---
 
-## 🧩 9. Ejercicio 8 — Formulario Controlado con onSubmit y Validación
+## 🧩 5. Ejercicio 5 — Componente para la relación 1:N
 
-1. **Componente de Formulario `src/components/PrendaForm.jsx`:**
-   * Contiene 4 campos controlados (`nombre`, `precio`, `stock`, `talla`).
-   * Maneja el evento de envío con `onSubmit={handleSubmit}` y cancela el comportamiento por defecto del navegador mediante `e.preventDefault()`.
-2. **Validación de Regla de Negocio (Heredada de DRF Semana 8):**
-   * En el Laboratorio 08, el serializador `PrendaSerializer` exigía `validate_precio` (`precio > 0.00`).
-   * En el formulario de React se implementó la misma regla: si el precio es menor o igual a cero (`precioNum <= 0`), se interrumpe el guardado y se muestra el mensaje de error:  
-     `⚠️ Error: El precio debe ser mayor que cero (S/ 0.00), según la regla de la API.`
-3. **Actualización Inmutable del Estado:**
-   * En `App.jsx`, la lista de prendas se elevó a estado (`useState(prendasIniciales)`).
-   * Al guardar, se genera un **nuevo arreglo** usando el operador spread: `setListaPrendas(prev => [...prev, nuevaPrenda])`, cumpliendo la regla de no mutar con `.push()`.
-4. **Limpieza de Campos:**
-   * Tras un envío válido, los campos se reinician a su valor inicial (`setNombre('')`, `setPrecio('')`, `setStock('')`, `setError('')`).
+* Se construyó `src/components/DetallePedidoItem.jsx` para representar cada ítem dentro de un pedido, calculando el subtotal (`cantidad * precioUnitario`).
+* Se construyó `src/components/PedidoCard.jsx` para representar la cabecera del pedido (código, cliente, estado) e iterar sus detalles anidados, calculando el total del pedido mediante `.reduce()`.
+* Se adaptaron los nombres de campos del backend DRF (`cliente_nombre` → `cliente`, `precio_unitario` → `precioUnitario`, etc.).
+
+### ❓ Pregunta teórica: ¿Qué sucede si un componente hijo intenta modificar una prop directamente (`props.valor = 10`)?
+En React, las props son estrictamente de **sólo lectura (inmutables)**. React congela el objeto de propiedades (`Object.freeze(props)`) en modo estricto.
+* Si se intenta mutar directamente una prop (`props.valor = 10`), JavaScript lanzará un error de tipo en tiempo de ejecución:  
+  `TypeError: Cannot assign to read only property 'valor' of object '#<Object>'`
+* Esta regla garantiza el flujo unidireccional de datos (*one-way data binding*), evitando que un componente hijo altere silenciosamente el estado de su padre o de componentes hermanos.
 
 ---
 
-## 🧩 10. PARTE 2 — Investigación Propia: Logística Textil (`logistics`)
+## 🧩 6. Ejercicio 6 — Agregar estado local con `useState` y un evento
 
-### 10.1 Ejercicio 9 — Tabla de Equivalencias de la Investigación Propia
+* En `PrendaCard.jsx` se añadió el hook `const [contador, setContador] = useState(0)`.
+* Se agregó un botón interactivo `+ Agregar al carrito` con un manejador `onClick={() => setContador(c => c + 1)}`.
+* El botón se deshabilita automáticamente cuando `stock === 0 || contador >= stock`.
+* Se utilizó renderizado condicional: el badge con el conteo solo aparece si `contador > 0`.
+
+### ❓ Pregunta teórica: ¿Por qué una variable local `let contador = 0` no funciona para actualizar la pantalla?
+1. **Pérdida de valor:** Cada vez que un componente se ejecuta (re-renderiza), todas las variables locales declaradas con `let` se vuelven a inicializar desde cero.
+2. **Falta de reactividad:** React no escucha la mutación directa de variables locales. Al ejecutar `contador++`, React no es notificado de ningún cambio y no desencadena el ciclo de reconciliación ni actualiza el DOM real.
+3. **El rol de `useState`:** `useState` preserva el valor en la estructura interna de fibras de React (*Fiber Node*) entre renderizados sucesivos y su despachador (`setContador`) notifica a React para programar una actualización de la interfaz en pantalla.
+
+---
+
+## 🧩 7. Ejercicio 7 — Campo controlado que filtra la lista
+
+* En `PrendaList.jsx` se agregó un estado controlado `const [busqueda, setBusqueda] = useState('')`.
+* El `<input>` utiliza `value={busqueda}` y `onChange={(e) => setBusqueda(e.target.value)}`.
+* Se implementó filtrado en tiempo real sin distinguir mayúsculas ni minúsculas usando `.toLowerCase().includes(...)`.
+* Si ningún registro coincide, se renderiza un mensaje: `"No se encontraron prendas que coincidan con '[término]'."`
+
+### 🔎 Evidencias de Búsqueda:
+1. **Búsqueda 1 ("polo"):**
+   * Entrada: `polo`
+   * Resultado: Muestra únicamente *"Polo Oversize Acid Wash"* y *"Polo Boxy Heavyweight"*.
+2. **Búsqueda 2 ("hoodie"):**
+   * Entrada: `hoodie`
+   * Resultado: Muestra únicamente *"Hoodie Crop Streetwear"*.
+3. **Búsqueda sin coincidencias ("zapatos"):**
+   * Entrada: `zapatos`
+   * Resultado: Se oculta la lista y se muestra: `"No se encontraron prendas que coincidan con 'zapatos'."`
+
+---
+
+## 🧩 8. Ejercicio 8 — Formulario controlado con `onSubmit` y validación
+
+* Se creó `src/components/PrendaForm.jsx` con 4 campos controlados (`nombre`, `precio`, `stock`, `talla`).
+* Manejo del evento con `onSubmit={handleSubmit}` y `e.preventDefault()`.
+* **Regla de Validación (DRF Semana 8):** El precio debe ser mayor a cero (`precioNum > 0.00`). Si no se cumple, se muestra:  
+  `⚠️ Error: El precio debe ser mayor que cero (S/ 0.00), según la regla de la API.`
+* **Actualización Inmutable:** En `App.jsx`, se eleva el estado con `useState(prendasIniciales)` y se agrega el nuevo registro con el operador spread:  
+  `setListaPrendas(prev => [...prev, nuevaPrenda])`, sin usar `.push()`.
+* **Limpieza de campos:** Todos los campos se resetean a su estado inicial tras un envío exitoso.
+
+---
+
+## 🧩 9. PARTE 2 — Investigación Propia: Logística Textil (`logistics`)
+
+### 9.1 Ejercicio 9 — Tabla de Equivalencias de la Investigación Propia
 
 | Concepto Requerido | Elemento en Logística (`logistics`) | Componente Implementado | Regla de Negocio / Comportamiento |
 | :--- | :--- | :--- | :--- |
@@ -145,26 +134,124 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 | **Botón con Estado (`useState` + `onClick`)** | Reserva de muestra de tela | Botón en `MaterialCard.jsx` | Incrementa un contador de metros/unidades reservadas. Se deshabilita si `stock === 0` o si se agota la disponibilidad. |
 | **Componente de Relación Anidada (N:M)** | Orden de Despacho y sus Detalles (`OrdenDespacho` ↔ `DetalleDespacho`) | `DespachoCard.jsx` + `DetalleDespachoItem.jsx` | `DespachoCard` gestiona la cabecera e itera cada material con `DetalleDespachoItem`, calculando el costo total del envío vía `reduce()`. |
 | **Campo de Búsqueda Controlado** | Filtro de Insumos Textiles | `MaterialList.jsx` | Input controlado (`value` y `onChange`) que filtra materiales por nombre o categoría sin distinguir mayúsculas. |
-| **Formulario Controlado con Validación** | Registro de Nuevo Insumo Textil | `MaterialForm.jsx` | Formulario controlado (`onSubmit` + `preventDefault`) con 4 campos (`nombre`, `categoria`, `precio_unitario`, `stock`). |
+| **Formulario Controlado con Validación** | Registro de Nuevo Insumo Textil | `MaterialForm.jsx` | Formulario controlado (`onSubmit` + `preventDefault`) con 5 campos (`nombre`, `categoria`, `unidad_medida`, `precio_unitario`, `stock`). |
 | **Regla de Validación de la API (Semana 8)** | `validate_precio_unitario` y `validate_stock` de DRF | Validación en `MaterialForm.jsx` | El precio unitario debe ser estrictamente mayor a cero (`precio_unitario > 0.00`) y el stock no puede ser negativo (`stock >= 0`). |
-
-### 10.2 Verificación del Checklist Obligatorio — Parte 2
-
-| Criterio del Checklist | Estado | Evidencia de Implementación |
-| :--- | :---: | :--- |
-| **1. Al menos tres componentes funcionales en `src/components` con PascalCase** | ✅ Cumplido | `MaterialCard.jsx`, `MaterialList.jsx`, `DespachoCard.jsx`, `DetalleDespachoItem.jsx`, `MaterialForm.jsx`. |
-| **2. Datos por props desestructuradas y valor por defecto o children** | ✅ Cumplido | `MaterialCard` desestructura props con valores por defecto (`categoria = 'Insumos Textiles'`, `unidadMedida = 'Metros'`, `stock = 0`). |
-| **3. Lista de componentes con `map()` y `key`** | ✅ Cumplido | `MaterialList.jsx` mapea los insumos con `key={m.id}`; `despachos.map()` en `App.jsx`. |
-| **4. Relación 1:N o N:M con componente dentro de otro componente** | ✅ Cumplido | `DespachoCard` aloja y renderiza internamente instancias de `DetalleDespachoItem`. |
-| **5. Estado con `useState` y evento `onClick`** | ✅ Cumplido | Botón `+ Reservar muestra` en `MaterialCard` con contador independiente. |
-| **6. Campo controlado (`value` y `onChange`) que filtra la lista** | ✅ Cumplido | Buscador en tiempo real de insumos textiles en `MaterialList.jsx`. |
-| **7. Formulario controlado con `onSubmit`, `preventDefault`, validación y sin `.push()`** | ✅ Cumplido | `MaterialForm.jsx` con validación de precio y stock, agregando con spread operator. |
-| **8. Consola sin advertencias y `npm run lint` / `npm run build` sin errores** | ✅ Cumplido | Verificado: 0 errores en `oxlint` sobre 15 archivos y compilación limpia en `vite build`. |
-| **9. Justificación escrita de props, estado y persistencia en base de datos** | ✅ Cumplido | Documentado en detalle en este README y en el informe. |
 
 ---
 
-## 📁 11. Estructura del repositorio
+## 🧩 10. Ejercicio 10 — Componentes y Props de la Investigación Propia
+
+Se desarrollaron y modularizaron cinco componentes en archivos independientes dentro de `src/components/`:
+1. **`MaterialCard.jsx`:** Componente funcional para el registro individual de insumos textiles. Desestructura props con valores por defecto (`categoria = 'Insumos Textiles'`, `unidadMedida = 'Metros'`, `stock = 0`).
+2. **`MaterialList.jsx`:** Componente de lista que recibe la colección `materiales` y renderiza cada `MaterialCard` usando `.map()` y `key={material.id}`.
+3. **`DetalleDespachoItem.jsx`:** Componente anidado que muestra la línea de material, cantidad y subtotal dentro de una orden de despacho.
+4. **`DespachoCard.jsx`:** Componente contenedor de relación que renderiza la orden de despacho (código, sucursal de destino, transportista, estado) e itera sus materiales despachados llamando a `DetalleDespachoItem`.
+5. **Uso de `Tarjeta` con `children`:** En `App.jsx`, se utilizó el contenedor `Tarjeta` para destacar el insumo crítico de producción (*Tela Algodón Pima 50/1 Negro*).
+
+---
+
+## 🧩 11. Ejercicio 11 — Estado, Eventos y Buscador en la Investigación Propia
+
+### 11.1 Botón con Estado en `MaterialCard.jsx` (Antes y Después)
+* **Antes del clic:**
+  * Estado local: `reservado = 0`.
+  * Vista: El botón muestra `+ Reservar muestra` y no hay badges de reserva activos.
+* **Acción de clic:**
+  * El usuario hace clic sobre el botón en el insumo *"Tela Algodón Pima 50/1 Negro"*.
+* **Después del clic:**
+  * Estado local: `reservado = 1`.
+  * Vista: Aparece en color verde el aviso: `Muestras reservadas: 1 metros`.
+  * Clics sucesivos incrementan el valor (`2 metros`, `3 metros`). Si el stock de almacén es `0` (como en *"Cono Hilo Poliéster"*), el botón se renderiza bloqueado (`disabled`) con el texto `Sin stock`.
+
+### 11.2 Campo de Búsqueda Controlado en `MaterialList.jsx` (Antes y Después)
+* **Antes de la búsqueda (Estado inicial):**
+  * Input: `busqueda = ""`
+  * Vista: Se muestran los 5 insumos textiles disponibles en el catálogo.
+* **Búsqueda 1 ("pima" o "algodón"):**
+  * Entrada: `pima`
+  * Vista filtrada: Únicamente se renderiza la tarjeta de la *"Tela Algodón Pima 50/1 Negro"*.
+* **Búsqueda 2 ("cierre"):**
+  * Entrada: `cierre`
+  * Vista filtrada: Únicamente se renderiza la tarjeta del *"Cierre Metálico N° 5 Niquelado 60cm"*.
+* **Búsqueda sin coincidencias ("cuero"):**
+  * Entrada: `cuero`
+  * Vista: La lista de insumos se oculta y aparece el aviso:  
+    `No se encontraron insumos textiles que coincidan con "cuero".`
+
+---
+
+## 🧩 12. Formulario Controlado con Validación en la Investigación Propia (`MaterialForm.jsx`)
+
+* **Componente:** `src/components/MaterialForm.jsx`.
+* **Manejo de eventos:** `onSubmit={handleSubmit}` con `e.preventDefault()`.
+* **Inmutabilidad:** En `App.jsx`, `handleAgregarMaterial` utiliza `setListaMateriales(prev => [...prev, nuevoMaterial])`, preservando la inmutabilidad de arreglos en React.
+
+### 🔎 Evidencias de Validación del Formulario:
+* **Envío Válido:**
+  * Nombre: `Tela Rib 2x1 Algodón Peinado`
+  * Categoría: `Telas y Tejidos`
+  * Unidad: `Metros`
+  * Precio: `28.50`
+  * Stock: `120`
+  * Resultado: Se agrega el registro a la lista en tiempo real, se limpian los campos y se muestra el mensaje de confirmación:  
+    `✅ ¡Insumo textil registrado en el inventario con éxito!`
+* **Envío Inválido 1 (Regla DRF `precio_unitario > 0`):**
+  * Entrada: Precio `0` o `-10.00`.
+  * Resultado: Se interrumpe el guardado y se despliega la advertencia:  
+    `⚠️ Error: El precio unitario debe ser mayor que cero (S/ 0.00), según la regla de la API.`
+* **Envío Inválido 2 (Regla DRF `stock >= 0`):**
+  * Entrada: Stock `-5`.
+  * Resultado: Se interrumpe el guardado y se despliega la advertencia:  
+    `⚠️ Error: El stock en almacén no puede ser negativo, según la regla de la API.`
+
+---
+
+## ✅ 13. Checklist Obligatorio Antes de Continuar — Parte 2
+
+A continuación se detalla la verificación de cada uno de los 9 criterios exigidos en la guía del laboratorio:
+
+| # | Criterio de Evaluación | Verificación Requerida | Estado | Evidencia de Implementación en el Proyecto |
+| :-: | :--- | :--- | :---: | :--- |
+| **1** | Existen al menos tres componentes funcionales, cada uno en su archivo dentro de `src/components`, con nombre en mayúscula. | Estructura de carpetas + código. | ✅ **CUMPLIDO** | Creados 5 componentes en PascalCase: `MaterialCard.jsx`, `MaterialList.jsx`, `DespachoCard.jsx`, `DetalleDespachoItem.jsx` y `MaterialForm.jsx`. |
+| **2** | Los datos llegan a los componentes por `props` desestructuradas, y hay un valor por defecto o un uso de `children`. | Código de los componentes. | ✅ **CUMPLIDO** | `MaterialCard.jsx` usa props desestructuradas con defaults (`categoria = 'Insumos Textiles'`, `unidadMedida = 'Metros'`, `stock = 0`); `App.jsx` utiliza `Tarjeta` con `children`. |
+| **3** | Una lista de componentes se muestra con `map()` y `key` en el componente. | Código + captura. | ✅ **CUMPLIDO** | `MaterialList.jsx` itera la colección con `materiales.map(m => <MaterialCard key={m.id} ... />)`; `despachos.map()` en `App.jsx`. |
+| **4** | Una relación 1:N o N:M se muestra con un componente dentro de otro componente. | Código + captura. | ✅ **CUMPLIDO** | `DespachoCard.jsx` renderiza instancias anidadas de `DetalleDespachoItem.jsx` para mostrar los materiales asignados a cada despacho. |
+| **5** | Un componente tiene estado con `useState` y un evento `onClick` que lo cambia. | Capturas antes y después del clic. | ✅ **CUMPLIDO** | `MaterialCard.jsx` maneja el estado `reservado` con botón `+ Reservar muestra` y evento `onClick`, bloqueándose al agotar stock. |
+| **6** | Un campo controlado (`value` y `onChange`) filtra la lista. | Capturas de dos búsquedas. | ✅ **CUMPLIDO** | `MaterialList.jsx` implementa input controlado `busqueda` que filtra por nombre o categoría sin distinguir mayúsculas, con mensaje de no coincidencias. |
+| **7** | Un formulario controlado con `onSubmit` y `preventDefault` agrega un registro sin modificar el arreglo y valida una regla con mensaje de error. | Capturas del envío válido y del inválido. | ✅ **CUMPLIDO** | `MaterialForm.jsx` valida `precio_unitario > 0` y `stock >= 0`, limpia campos tras éxito y actualiza `listaMateriales` con spread operator. |
+| **8** | La consola del navegador no muestra advertencias y `npm run lint` y `npm run build` terminan sin errores. | Capturas de la consola y de la terminal. | ✅ **CUMPLIDO** | `oxlint` validó 15 archivos con 0 errores y 0 warnings; `vite build` compiló los 29 módulos limpiamente en `dist/`. |
+| **9** | Se explica por escrito qué resuelven las `props` y el `estado`, y qué falta para guardar los datos en la base de datos de Django. | Párrafo de justificación. | ✅ **CUMPLIDO** | Justificación detallada redactada en la Sección 14 de este documento. |
+
+---
+
+## 💡 14. Justificación Teórica: Props, Estado y Persistencia en Django (Criterio 9)
+
+### 14.1 ¿Qué resuelven las `props`?
+Las **`props` (propiedades)** resuelven la **comunicación unidireccional y jerárquica de datos** (*top-down* o de componente padre a componente hijo) en la arquitectura de React. Permiten que los componentes sean funciones puras, altamente reutilizables y desacoplados de la lógica de negocio central:
+* Permiten parametrizar componentes visuales (`MaterialCard`, `PrendaCard`, `Tarjeta`) para que muestren distinta información según los datos suministrados por el componente superior (`App`).
+* Son de **sólo lectura (inmutables)**, lo que impide que un componente hijo altere por error los datos del padre o de componentes vecinos, garantizando la predictibilidad y estabilidad del flujo de información en la aplicación.
+
+### 14.2 ¿Qué resuelve el `estado` (`useState`)?
+El **`estado` (`useState`)** resuelve la **reactividad, el dinamismo y la persistencia de datos temporales en memoria** dentro del ciclo de vida de la aplicación:
+* A diferencia de las variables locales comunes de JavaScript (que se destruyen y reinician en cada renderizado), las variables de estado se almacenan en los nodos internos del árbol de fibras de React (*Fiber Tree*).
+* Al invocar la función actualizadora (`setState`), React detecta la necesidad de un nuevo ciclo de reconciliación, compara el *Virtual DOM* con el DOM del navegador y actualiza únicamente los nodos específicos que cambiaron, permitiendo una experiencia de usuario fluida sin recargas completas de página (*Single Page Application*).
+
+### 14.3 ¿Qué falta para guardar los datos en la base de datos de Django?
+Actualmente, los registros añadidos mediante los formularios `PrendaForm` y `MaterialForm` se almacenan **únicamente en la memoria RAM del navegador** (dentro del estado de React). Si el usuario refresca la página (`F5`), los nuevos registros desaparecen y la aplicación vuelve a cargar la lista base de `datos.js`.
+
+Para que los datos se guarden permanentemente en la base de datos de Django (SQLite/PostgreSQL), se requiere implementar la integración de cliente-servidor mediante los siguientes cuatro pasos:
+1. **Llamadas Asíncronas en el Frontend (`fetch` o `axios`):**  
+   Reemplazar la inserción directa en memoria en los manejadores `handleSubmit` por peticiones HTTP asíncronas con método `POST` dirigidas a los endpoints de la API REST de Django (por ejemplo, `http://localhost:8000/api/materiales/`), enviando la carga útil en formato JSON con cabeceras `Content-Type: application/json`.
+2. **Carga Inicial con `useEffect`:**  
+   En `App.jsx`, sustituir los datos estáticos de `datos.js` por una consulta `GET` ejecutada al montar el componente (`useEffect(() => { ... }, [])`), sincronizando el estado inicial de React directamente con los registros almacenados en la base de datos.
+3. **Configuración de CORS en Django (`django-cors-headers`):**  
+   Como el frontend de desarrollo corre en `http://localhost:5173` y el backend de Django corre en `http://localhost:8000`, el navegador bloquearía las peticiones por la política de mismo origen (*Same-Origin Policy*). Se debe instalar `django-cors-headers` en Django, añadir su middleware y configurar `CORS_ALLOWED_ORIGINS = ['http://localhost:5173']` en `settings.py`.
+4. **Procesamiento y Persistencia en el Backend (DRF ViewSets y ORM):**  
+   El backend recibe la petición en `MaterialViewSet.create()`, valida los tipos y reglas de negocio en `MaterialSerializer.is_valid(raise_exception=True)` y finalmente invoca `serializer.save()`, momento en el cual el ORM de Django ejecuta la sentencia `INSERT INTO logistics_material ...` en la base de datos relacional.
+
+---
+
+## 📁 15. Estructura del Proyecto
 
 ```text
 Laboratorio10_Django/
@@ -198,18 +285,23 @@ Laboratorio10_Django/
 
 ---
 
-## 💻 12. Instalación y Ejecución del Frontend
+## 💻 16. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
 ```bash
 cd frontend
-npm install      # Instala las dependencias
-npm run dev      # Inicia el servidor de desarrollo en http://localhost:5173/
+npm install      # Instala las dependencias del proyecto
+npm run dev      # Inicia el servidor local de desarrollo en http://localhost:5173/
 ```
 
-Comandos de validación ejecutados exitosamente:
+### Comandos de Validación Ejecutados:
 ```bash
-npm run lint     # oxlint -> 0 errores, 0 warnings en 15 archivos
-npm run build    # vite build -> 29 módulos transformados exitosamente en dist/
+# 1. Análisis estático de código (Linter):
+npm run lint
+# Resultado: oxlint -> 0 errores, 0 warnings en 15 archivos (tiempo de ejecución: 74ms)
+
+# 2. Compilación de producción (Build):
+npm run build
+# Resultado: vite build -> 29 módulos transformados exitosamente en dist/ (tiempo: 256ms)
 ```
