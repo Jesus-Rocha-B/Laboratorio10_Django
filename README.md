@@ -68,7 +68,23 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 6. Estructura del repositorio
+## 🧩 6. Ejercicio 5 — Componentes dentro de Componentes: Relación 1:N
+
+1. **Componente Anidado `src/components/DetallePedidoItem.jsx`:**
+   * Representa cada línea de compra dentro de un pedido.
+   * Recibe `{ prenda, cantidad, precioUnitario }` y calcula internamente el subtotal: `(cantidad * Number(precioUnitario)).toFixed(2)`.
+2. **Componente Padre `src/components/PedidoCard.jsx`:**
+   * Modela la cabecera del pedido (1:N) recibiendo `{ codigo, cliente, estado, detalles }`.
+   * Realiza el cálculo del total general acumulado mediante JavaScript con `reduce()`.
+   * Mapea el arreglo de detalles instanciando `<DetallePedidoItem key={d.id} prenda={d.prenda_nombre} cantidad={d.cantidad} precioUnitario={d.precio_unitario} />`, adaptando los nombres de campos de la API (`snake_case`) a props de componentes (`camelCase`).
+3. **Inmutabilidad de las Props (¿Por qué no deben modificarse?):**
+   * React exige que los componentes actúen como **funciones puras** respecto a sus props. Las props fluyen unidireccionalmente desde el padre hacia los hijos y pertenecen exclusivamente al padre.
+   * Si un componente intenta mutar una prop directamente (`props.cantidad = 10`), el motor de React (que congela los objetos con `Object.freeze`) lanza la excepción:  
+     `TypeError: Cannot assign to read only property 'cantidad' of object '#<Object>'`.
+
+---
+
+## 📁 7. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -87,14 +103,16 @@ Laboratorio10_Django/
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
-            ├── Tarjeta.jsx    # Contenedor visual reutilizable con prop children
-            ├── PrendaCard.jsx # Tarjeta de prenda con props desestructuradas y default values
-            └── PrendaList.jsx # Lista que mapea prendas usando key={prenda.id}
+            ├── Tarjeta.jsx           # Contenedor visual reutilizable con prop children
+            ├── PrendaCard.jsx        # Tarjeta de prenda con props desestructuradas
+            ├── PrendaList.jsx        # Lista que mapea prendas usando key={prenda.id}
+            ├── PedidoCard.jsx        # Relación 1:N con total acumulado vía reduce()
+            └── DetallePedidoItem.jsx # Elemento anidado con cálculo de subtotal
 ```
 
 ---
 
-## 💻 7. Instalación y Ejecución del Frontend
+## 💻 8. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 

@@ -1,6 +1,7 @@
 import './App.css'
 import PrendaCard from './components/PrendaCard'
 import PrendaList from './components/PrendaList'
+import PedidoCard from './components/PedidoCard'
 import Tarjeta from './components/Tarjeta'
 import {
   prendas,
@@ -9,7 +10,6 @@ import {
   proveedores,
   despachos,
   costoDespacho,
-  totalPedido,
 } from './datos'
 
 function App() {
@@ -51,23 +51,20 @@ function App() {
         </small>
       </div>
 
-      <h2>Pedidos y sus detalles</h2>
+      {/* Ejercicio 5: Componente para relación 1:N (PedidoCard) usando DetallePedidoItem para anidados */}
+      <h2>Pedidos y sus detalles (Relación 1:N modularizada)</h2>
       {pedidos.length === 0 ? (
         <p>No hay registros</p>
       ) : (
         <ul className="lista">
           {pedidos.map((pedido) => (
-            <li key={pedido.id} className="tarjeta">
-              <strong>{pedido.codigo}</strong> — {pedido.cliente_nombre} ({pedido.estado})
-              <ul>
-                {pedido.detalles.map((d) => (
-                  <li key={d.id}>
-                    {d.cantidad} × {d.prenda_nombre} — S/ {(d.cantidad * Number(d.precio_unitario)).toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-              <strong style={{ color: '#0f766e' }}>Total: S/ {totalPedido(pedido).toFixed(2)}</strong>
-            </li>
+            <PedidoCard
+              key={pedido.id}
+              codigo={pedido.codigo}
+              cliente={pedido.cliente_nombre}
+              estado={pedido.estado}
+              detalles={pedido.detalles}
+            />
           ))}
         </ul>
       )}
