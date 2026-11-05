@@ -1,5 +1,6 @@
 import './App.css'
 import PrendaCard from './components/PrendaCard'
+import PrendaList from './components/PrendaList'
 import {
   prendas,
   pedidos,
@@ -17,32 +18,21 @@ function App() {
     <div className="contenedor">
       <h1 className="titulo">{nombreApp} — Catálogo Streetwear</h1>
 
-      {/* Ejercicio 2: Primer componente funcional mostrado dos veces */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3>Componente PrendaCard (mostrado dos veces):</h3>
-        <PrendaCard />
-        <PrendaCard />
-      </div>
+      {/* Ejercicio 3: Lista modularizada con PrendaList y PrendaCard pasando props y key */}
+      <h2>Catálogo de Prendas (con PrendaList y props)</h2>
+      <PrendaList prendas={prendas} />
 
-      {prendas.length === 0 ? (
-        <p>No hay registros</p>
-      ) : (
+      {/* Demostración de valor por defecto en props (sin marca, talla ni stock especificado) */}
+      <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>
+        <h3>Demostración de Props con Valores por Defecto:</h3>
         <ul className="lista">
-          {prendas.map((p) => (
-            <li key={p.id} className="tarjeta">
-              {p.nombre} ({p.marca}, talla {p.talla}) — S/ {Number(p.precio).toFixed(2)} —{' '}
-              {p.stock === 0 ? (
-                <span className="etiqueta agotado">Agotado</span>
-              ) : (
-                <span className="etiqueta">Stock: {p.stock}</span>
-              )}
-              {p.stock > 0 && p.stock <= 5 && (
-                <span className="etiqueta alerta">¡Últimas unidades!</span>
-              )}
-            </li>
-          ))}
+          <PrendaCard nombre="Polera Básica Urban Sample" precio="79.90" />
         </ul>
-      )}
+        <small style={{ color: '#64748b' }}>
+          * Esta prenda no recibió `marca`, `talla` ni `stock`, por lo que tomó los valores por defecto: 
+          marca="UrbanTrend", talla="Estándar" y stock=0 (mostrando badge "Agotado").
+        </small>
+      </div>
 
       <h2>Pedidos y sus detalles</h2>
       {pedidos.length === 0 ? (

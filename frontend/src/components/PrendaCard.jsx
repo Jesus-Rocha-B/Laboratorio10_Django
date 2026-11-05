@@ -1,9 +1,24 @@
-function PrendaCard() {
+function PrendaCard({
+  nombre,
+  marca = 'UrbanTrend',
+  talla = 'Estándar',
+  precio = '0.00',
+  stock = 0,
+}) {
+  const precioFormateado = Number(precio).toFixed(2)
+
   return (
-    <div className="tarjeta">
-      <strong>Polo Oversize Rebel Classic</strong> (Rebel, talla L) — S/ 89.90 —{' '}
-      <span className="etiqueta">Stock: 20</span>
-    </div>
+    <li className="tarjeta">
+      <strong>{nombre}</strong> ({marca}, talla {talla}) — S/ {precioFormateado} —{' '}
+      {stock === 0 ? (
+        <span className="etiqueta agotado">Agotado</span>
+      ) : (
+        <span className="etiqueta">Stock: {stock}</span>
+      )}
+      {stock > 0 && stock <= 5 && (
+        <span className="etiqueta alerta">¡Últimas unidades!</span>
+      )}
+    </li>
   )
 }
 

@@ -42,7 +42,22 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 4. Estructura del repositorio
+## 🧩 4. Ejercicio 3 — Pasar Datos con Props y Armar la Lista
+
+1. **Desestructuración y Valores por Defecto en `PrendaCard.jsx`:**
+   * Se modificó `PrendaCard` para recibir `{ nombre, marca = 'UrbanTrend', talla = 'Estándar', precio = '0.00', stock = 0 }`.
+   * Si una prenda no tiene stock o marca definida, se le asigna el valor por defecto gracias a los parámetros por defecto de ES6 (`stock = 0`, `marca = 'UrbanTrend'`).
+2. **Creación del Componente de Colección `PrendaList.jsx`:**
+   * Se creó `src/components/PrendaList.jsx` que recibe el arreglo `prendas` por props.
+   * Renderiza el estado vacío si el arreglo no tiene registros (`prendas.length === 0`).
+   * Itera la colección mediante `.map()` y asigna la propiedad requerida `key={prenda.id}` a cada elemento `<PrendaCard />`.
+3. **Integración en `App.jsx`:**
+   * Se reemplazó el bucle de prendas en `App.jsx` por `<PrendaList prendas={prendas} />`.
+   * Se agregó un caso de prueba independiente con `<PrendaCard nombre="Polera Básica Urban Sample" precio="79.90" />` para evidenciar visualmente el funcionamiento de los valores por defecto (marca="UrbanTrend", talla="Estándar" y badge="Agotado").
+
+---
+
+## 📁 5. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -61,12 +76,13 @@ Laboratorio10_Django/
         ├── App.css       # Estilos visuales de la aplicación
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
-            └── PrendaCard.jsx # Primer componente funcional independiente
+            ├── PrendaCard.jsx # Tarjeta de prenda con props desestructuradas y default values
+            └── PrendaList.jsx # Lista que mapea prendas usando key={prenda.id}
 ```
 
 ---
 
-## 💻 5. Instalación y Ejecución del Frontend
+## 💻 6. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
