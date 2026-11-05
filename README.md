@@ -84,7 +84,23 @@ En lugar de concentrar toda la estructura visual, datos mockeados y lógica en u
 
 ---
 
-## 📁 7. Estructura del repositorio
+## 🧩 7. Ejercicio 6 — Agregar Estado y un Evento de Clic
+
+1. **Implementación de Estado Local con `useState`:**
+   * En `src/components/PrendaCard.jsx`, se agregó el hook `const [contador, setContador] = useState(0)` para gestionar las unidades agregadas de forma individual e independiente en cada tarjeta.
+2. **Desactivación Condicional del Botón:**
+   * Se configuró el atributo `disabled={stock === 0 || contador >= stock}`. Cuando una prenda no tiene existencias (`stock === 0`) o se alcanza el límite disponible, el botón se bloquea automáticamente evitando selecciones inválidas.
+3. **Renderizado Condicional del Valor:**
+   * El indicador visual solo se dibuja en pantalla cuando el valor es estrictamente mayor que cero mediante el operador lógico: `{contador > 0 && <span>Seleccionados: {contador}</span>}`.
+4. **Aislamiento de Estado entre Componentes:**
+   * Al interactuar con el botón de una prenda (ej. *Polo Oversize*), su contador se incrementa sin alterar el estado de las demás prendas, comprobando que cada instancia mantiene su propio ámbito de memoria en React.
+5. **¿Por qué una variable normal (`let`) no actualiza la pantalla?:**
+   * React no monitoriza cambios directos en variables convencionales de JavaScript en memoria. No existe un disparador (*trigger*) que le ordene volver a ejecutar la función del componente ni re-renderizar el Virtual DOM.
+   * Además, si el componente se re-renderizara por otro motivo externo, la función se volvería a ejecutar de arriba hacia abajo y la variable `let contador = 0` se reiniciaría a cero, perdiendo el valor previo. `useState` garantiza la persistencia del dato a través de los ciclos de renderizado y notifica a React para actualizar la vista.
+
+---
+
+## 📁 8. Estructura del repositorio
 
 ```text
 Laboratorio10_Django/
@@ -104,7 +120,7 @@ Laboratorio10_Django/
         ├── datos.js      # Datos mockeados y funciones de utilidad extraídas
         └── components/   # Directorio para los componentes reutilizables
             ├── Tarjeta.jsx           # Contenedor visual reutilizable con prop children
-            ├── PrendaCard.jsx        # Tarjeta de prenda con props desestructuradas
+            ├── PrendaCard.jsx        # Tarjeta de prenda con estado local useState y botón
             ├── PrendaList.jsx        # Lista que mapea prendas usando key={prenda.id}
             ├── PedidoCard.jsx        # Relación 1:N con total acumulado vía reduce()
             └── DetallePedidoItem.jsx # Elemento anidado con cálculo de subtotal
@@ -112,7 +128,7 @@ Laboratorio10_Django/
 
 ---
 
-## 💻 8. Instalación y Ejecución del Frontend
+## 💻 9. Instalación y Ejecución del Frontend
 
 Requiere Node.js (versión LTS) y npm:
 
